@@ -10,13 +10,13 @@ public class Round {
 
     @ManyToOne
     @JoinColumn(name = "gameId")
-    private Game game;
+    private Table table;
 
     public void setId(int id) { this.id = id; }
-    public void setGame(Game game) { this.game = game; }
+    public void setTable(Table table) { this.table = table; }
 
     public int getId() { return id; }
-    public Game getGame() { return game; }
+    public Table getTable() { return table; }
 
     @Override
     public boolean equals(Object another) {
