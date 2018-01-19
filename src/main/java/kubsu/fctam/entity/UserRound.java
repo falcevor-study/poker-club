@@ -1,9 +1,6 @@
 package kubsu.fctam.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity(name = "tUserRound")
 public class UserRound {
@@ -11,19 +8,21 @@ public class UserRound {
     @GeneratedValue
     private int id;
 
-    @Column
-    private int userId;
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
 
-    @Column
-    private int roundId;
+    @ManyToOne
+    @JoinColumn(name = "roundId")
+    private Round round;
 
     public void setId(int id) { this.id = id; }
-    public void setUserId(int userId) { this.userId = userId; }
-    public void setRoundId(int roundId) { this.roundId = roundId; }
+    public void setUser(User user) { this.user = user; }
+    public void setRound(Round round) { this.round = round; }
 
     public int getId() { return id; }
-    public int getUserId() { return userId; }
-    public int getRoundId() { return roundId; }
+    public User getUser() { return user; }
+    public Round getRound() { return round; }
 
     @Override
     public boolean equals(Object another) {
