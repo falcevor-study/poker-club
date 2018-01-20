@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Entity(name = "tPokerPlayer")
+@Entity(name = "tUser")
 public class User {
     @Id
     @GeneratedValue
@@ -20,7 +20,16 @@ public class User {
     @Column
     private int money;
 
-    public void setId(int id) { this.id = id; }
+
+    public User() {}
+
+    public User(String login, String password, int money) {
+        this.login = login;
+        this.password = password;
+        this.money = money;
+    }
+
+
     public void setLogin(String login) { this.login = login; }
     public void setPassword(String password) { this.password = password; }
     public void setMoney(int money) { this.money = money; }
@@ -30,11 +39,9 @@ public class User {
     public String getPassword() { return password; }
     public int getMoney() { return money; }
 
-
     @Override
     public boolean equals(Object another) {
         return another instanceof User
                 && ((User)another).getLogin().equals(this.login);
     }
-
 }
