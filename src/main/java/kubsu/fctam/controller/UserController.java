@@ -5,6 +5,7 @@ import kubsu.fctam.service.SecurityService;
 import kubsu.fctam.service.UserService;
 import kubsu.fctam.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +30,17 @@ public class UserController {
 
     @Autowired
     private UserValidator userValidator;
+
+    // метод для вывода информации в профиль
+    @RequestMapping(method = RequestMethod.GET)
+    public String printUser(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String name = auth.getName(); //get logged in username
+        User user = service.getByLogin(name);
+        model.addAttribute("login", user.getLogin());
+        model.addAttribute("money", user.getMoney());
+        return "profile";
+    }
 
     @RequestMapping(value = "/register", method = RequestMethod.GET)
     public String registration(Model model) {

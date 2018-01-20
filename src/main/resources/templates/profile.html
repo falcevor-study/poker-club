@@ -21,8 +21,9 @@
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="/tables">Список столов</a></li>
-                <li><a href="/user">Профиль</a></li>
+                <li><a href="/tables">Список столов</a></li>
+                <li class="active"><a href="/tables">Профиль</a></li>
+                <li><a href="/user/logout">Выйти</a></li>
             </ul>
         </div>
     </div>
@@ -30,19 +31,21 @@
 
 <div class="container">
     <div class="starter-template">
-        <form action="#" th:action="@{/user/register}" th:object="${user}" method="post">
-            <h1 style="margin-top: 3em">Регистрация</h1>
-            <div class="alert alert-danger" th:text="${error}"></div>
-            <div class="form-group">
-                <label for="usr">Логин</label>
-                <input style="width: 25em" type="text" class="form-control" id="usr" maxlength="100" th:field="*{login}" th:required="required"/>
+        <hr/>
+        <hr/>
+        <hr/>
+        <hr/>
+        <h1>Ваш профиль</h1>
+        <form action="">
+            <div class="mb-3">
+                <label>Логин</label>
+                <input type="text" class="form-control" th:readonly="${true}" th:value="${login}"/>
             </div>
-            <div class="form-group">
-                <label for="pass">Пароль</label>
-                <input style="width: 25em" type="password" class="form-control" id="pass" maxlength="100" th:field="*{password}" th:required="required"/>
+            <hr/>
+            <div class="mb-3">
+                <label>Количество денег на счету</label>
+                <input type="text" class="form-control" th:readonly="${true}" th:value="${money}"/>
             </div>
-
-            <button type="submit" class="btn btn-success">Зарегистрироваться</button>
         </form>
     </div>
 </div>
