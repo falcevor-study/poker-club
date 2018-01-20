@@ -1,8 +1,8 @@
 package kubsu.fctam.dao;
 
-import kubsu.fctam.entity.Table;
+import kubsu.fctam.entity.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TableRepository extends CrudRepository<Table, Integer> {}
+public interface UserRepository extends CrudRepository<User, Integer> {}
