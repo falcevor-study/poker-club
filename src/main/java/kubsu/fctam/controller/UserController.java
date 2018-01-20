@@ -1,6 +1,7 @@
 package kubsu.fctam.controller;
 
 import kubsu.fctam.entity.User;
+import kubsu.fctam.service.ResultService;
 import kubsu.fctam.service.SecurityService;
 import kubsu.fctam.service.UserService;
 import kubsu.fctam.validator.UserValidator;
@@ -31,7 +32,10 @@ public class UserController {
     @Autowired
     private UserValidator userValidator;
 
-    // метод для вывода информации в профиль
+    @Autowired
+    private ResultService resultService;
+
+    // метод для вывода информации об игроке
     @RequestMapping(method = RequestMethod.GET)
     public String printUser(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -39,6 +43,7 @@ public class UserController {
         User user = service.getByLogin(name);
         model.addAttribute("login", user.getLogin());
         model.addAttribute("money", user.getMoney());
+        model.addAttribute("results", resultService.getFirst10(user));
         return "profile";
     }
 

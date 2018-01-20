@@ -1,10 +1,7 @@
 package kubsu.fctam.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import java.util.Date;
 
 @Entity(name = "tGame")
 public class Game {
@@ -16,18 +13,24 @@ public class Game {
     @JoinColumn(name = "tableId")
     private Table table;
 
+    @Column
+    private Date endDtm;
+
 
     public Game() {}
 
-    public Game(Table table) {
+    public Game(Table table, Date endDtm) {
         this.table = table;
+        this.endDtm = endDtm;
     }
 
 
     public void setTable(Table table) { this.table = table; }
+    public void setEndDtm(Date endDtm) { this.endDtm = endDtm; }
 
     public int getId() { return id; }
     public Table getTable() { return table; }
+    public Date getEndDtm() { return endDtm; }
 
     @Override
     public boolean equals(Object another) {

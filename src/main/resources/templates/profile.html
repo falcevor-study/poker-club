@@ -47,6 +47,25 @@
                 <input type="text" class="form-control" th:readonly="${true}" th:value="${money}"/>
             </div>
         </form>
+        <hr/>
+        <h1>Ваши максимальные выигрыши</h1>
+        <hr/>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Размер выигрыша</th>
+                <th scope="col">Дата проведения игры</th>
+                <th scope="col">Название стола</th>
+            </tr>
+            </thead>
+            <tbody class="row"  th:each="result: ${results}">
+            <tr>
+                <th scope="row"><p th:text="${result.gain}"/></th>
+                <th scope="row"><p th:text="${#dates.format(result.game.endDtm,'yyyy/MM/dd')}"/></th>
+                <th scope="row"><p th:text="${result.game.getTable().name}"/></th>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 </body>
