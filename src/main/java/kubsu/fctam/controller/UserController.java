@@ -5,12 +5,18 @@ import kubsu.fctam.service.SecurityService;
 import kubsu.fctam.service.UserService;
 import kubsu.fctam.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/user")
@@ -58,8 +64,16 @@ public class UserController {
     }
 
 
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logout(Model model) {
-        return "redirect:../tables";
+    @RequestMapping(value = "/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+        HttpSession session = request.getSession(false);
+        SecurityContextHolder.clearContext();
+        session= request.getSession(false);
+        if(session != null) {
+            session.invalidate();
+        }
+        for(Cookie cookie : request.getCookies()) {
+            cookie.setMaxAge(0);
+        }
     }
 }
