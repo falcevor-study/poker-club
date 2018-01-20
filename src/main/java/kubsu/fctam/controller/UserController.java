@@ -1,11 +1,13 @@
 package kubsu.fctam.controller;
 
 import kubsu.fctam.entity.User;
+import kubsu.fctam.service.SecurityService;
 import kubsu.fctam.service.UserService;
+import kubsu.fctam.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.DigestUtils;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -16,30 +18,48 @@ public class UserController {
     @Autowired
     private UserService service;
 
-    @RequestMapping("/register")
+    @Autowired
+    private SecurityService securityService;
+
+    @Autowired
+    private UserValidator userValidator;
+
+    @RequestMapping(value = "/register", method = RequestMethod.GET)
     public String registration(Model model) {
         model.addAttribute("user", new User());
-        model.addAttribute("error", "Необходимо заполнить все поля формы регистрации.");
+        model.addAttribute(
+                "error",
+                "Для успешной регистрации необходимо заполнить все поля формы."
+        );
         return "registration";
     }
 
-    @RequestMapping("/register/error")
-    public String registrationError(Model model) {
-        model.addAttribute("user", new User());
-        model.addAttribute("error", "Указанный логин уже занят другой учетной записью.");
-        return "registration";
-    }
-
-    @RequestMapping(value = "/register/submit", method = RequestMethod.POST)
-    public String submitRegistration(@ModelAttribute User user) {
-        user.setMoney(2000); // Стартовый капитал.
-        user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes())); // Хешируем пароль, ну а как же?
-
-        try {
-            service.save(user);
-        } catch (Exception ex) {
-            return "redirect:error";
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public String registrationSubmit(@ModelAttribute("user") User user, BindingResult bindingResult, Model model) {
+        userValidator.validate(user, bindingResult);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute(
+                    "error",
+                    "Указанный логин занят другой учетной записью."
+            );
+            return "registration";
         }
+
+        user.setMoney(2000); // Стартовый капитал.
+        service.save(user);
+        securityService.autologin(user.getLogin(), user.getPassword());
         return "redirect:../";
+    }
+
+
+    @RequestMapping(value = "/auth", method = RequestMethod.GET)
+    public String login(Model model) {
+        return "authorization";
+    }
+
+
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public String logout(Model model) {
+        return "redirect:../tables";
     }
 }
