@@ -28,7 +28,7 @@ public class TableService {
         return StreamSupport
                 .stream(Spliterators.spliteratorUnknownSize(repository.findAll().iterator(), Spliterator.NONNULL),
                         false)
-                .sorted(Comparator.reverseOrder())
+                .sorted()
                 .collect(Collectors.toList());
     }
 }

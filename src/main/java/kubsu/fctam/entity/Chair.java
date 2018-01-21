@@ -27,27 +27,46 @@ public class Chair implements Comparable<Chair> {
     @Column(length = 50)
     private String status;
 
+    @Column
+    private long bet;
+
+    @ManyToOne
+    @JoinColumn(name = "card1Id")
+    private Card card1;
+
+    @ManyToOne
+    @JoinColumn(name = "card2Id")
+    private Card card2;
+
 
     public Chair() {}
 
-    public Chair(User user, Table table, int number, String status) {
+    public Chair(User user, Table table, int number, String status, long bet, Card card1, Card card2) {
         this.user = user;
         this.table = table;
         this.number = number;
         this.status = status;
+        this.bet = bet;
+        this.card1 = card1;
+        this.card2 = card2;
     }
-
 
     public void setUser(User user) { this.user = user; }
     public void setTable(Table table) { this.table = table; }
     public void setNumber(int number) { this.number = number; }
     public void setStatus(String status) { this.status = status; }
+    public void setBet(long bet) { this.bet = bet; }
+    public void setCard1(Card card1) { this.card1 = card1; }
+    public void setCard2(Card card2) { this.card2 = card2; }
 
     public int getId() { return id; }
     public User getUser() { return user; }
     public Table getTable() { return table; }
     public int getNumber() { return number; }
     public String getStatus() { return status; }
+    public long getBet() { return bet; }
+    public Card getCard1() { return card1; }
+    public Card getCard2() { return card2; }
 
     @Override
     public boolean equals(Object another) {

@@ -6,7 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity(name = "tUser")
-public class User {
+public class User implements Comparable<User>{
     @Id
     @GeneratedValue
     private int id;
@@ -43,5 +43,10 @@ public class User {
     public boolean equals(Object another) {
         return another instanceof User
                 && ((User)another).getLogin().equals(this.login);
+    }
+
+    @Override
+    public int compareTo(User that) {
+        return Integer.compare(this.money, that.money);
     }
 }

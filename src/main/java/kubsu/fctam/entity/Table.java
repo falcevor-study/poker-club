@@ -61,6 +61,10 @@ public class Table implements Comparable<Table> {
         this.chairs.add(chair);
     }
 
+    public int chairsCount() {
+        return chairs.size();
+    }
+
     @Override
     public boolean equals(Object another) {
         return another instanceof Table
