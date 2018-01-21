@@ -1,0 +1,87 @@
+/*+ no-beautify */
+.card_value {
+    width: 60px;
+    height: 94px;
+    float: right;
+    background: url("/image/deck.png") no-repeat 0 -376px;
+}
+
+/* НЕТ КАРТ */
+.none .card_value {
+    background-position: 0 -376px;
+}
+
+/* РУБАШКА КАРТЫ */
+.reverse .card_value {
+    background-position: -120px -376px;
+}
+
+/* МАСТИ */
+.club .card_value {
+    background-position-y: 0;
+}
+
+.diamond .card_value {
+    background-position-y: -94px;
+}
+
+.heart .card_value {
+    background-position-y: -188px;
+}
+
+.spade .card_value {
+    background-position-y: -282px;
+}
+
+/* ВЕЛИЧИНЫ */
+.ace .card_value {
+    background-position-x: 0;
+}
+
+.two .card_value {
+    background-position-x: -60px;
+}
+
+.three .card_value {
+    background-position-x: -120px;
+}
+
+.four .card_value {
+    background-position-x: -180px;
+}
+
+.five .card_value {
+    background-position-x: -240px;
+}
+
+.six .card_value {
+    background-position-x: -300px;
+}
+
+.seven .card_value {
+    background-position-x: -360px;
+}
+
+.eight .card_value {
+    background-position-x: -420px;
+}
+
+.nine .card_value {
+    background-position-x: -480px;
+}
+
+.ten .card_value {
+    background-position-x: -540px;
+}
+
+.jack .card_value {
+    background-position-x: -600px;
+}
+
+.queen .card_value {
+    background-position-x: -660px;
+}
+
+.king .card_value {
+    background-position-x: -720px;
+}

@@ -24,6 +24,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         web.ignoring()
+                .antMatchers("/webjars/**")
                 .antMatchers("/css/**")
                 .antMatchers("/image/**");
     }
@@ -31,21 +32,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity config) throws Exception {
         config
-                    .authorizeRequests()
-                    .antMatchers("/user/register").permitAll()
-                    .antMatchers("/user/auth").permitAll()
-                    .anyRequest().authenticated()
+                .authorizeRequests()
+                .antMatchers("/user/register").permitAll()
+                .antMatchers("/user/auth").permitAll()
+                .anyRequest().authenticated()
                 .and()
-                    .formLogin()
-                        .loginPage("/user/auth")
-                        .defaultSuccessUrl("/tables")
-                        .permitAll()
+                .formLogin()
+                .loginPage("/user/auth")
+                .defaultSuccessUrl("/tables")
+                .permitAll()
                 .and()
-                    .logout()
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout"))
-                        .logoutSuccessUrl("/user/auth")
-                        .deleteCookies("JSESSIONID")
-                        .invalidateHttpSession(true);
+                .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout"))
+                .logoutSuccessUrl("/user/auth")
+                .deleteCookies("JSESSIONID")
+                .invalidateHttpSession(true);
     }
 
     @Autowired
