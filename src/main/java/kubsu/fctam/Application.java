@@ -3,9 +3,11 @@ package kubsu.fctam;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
 @SpringBootApplication
+@EnableWebSocketMessageBroker
 public class Application extends AbstractWebSocketMessageBrokerConfigurer {
 
 	public static void main(String[] args) {
