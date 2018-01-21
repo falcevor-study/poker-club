@@ -1,7 +1,15 @@
 package kubsu.fctam.controller;
 
+import kubsu.fctam.entity.Table;
+import kubsu.fctam.entity.User;
 import kubsu.fctam.service.TableService;
+import kubsu.fctam.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class TableController {
     @Autowired
     private TableService tableService;
+
+    @Autowired
+    UserService userService;
 
     @RequestMapping
     public String mainPage(Model model) {
@@ -28,7 +39,12 @@ public class TableController {
      */
     @RequestMapping(value = "/{name}", method = RequestMethod.GET)
     public String getTable(Model model, @PathVariable("name") String name) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String login = auth.getName(); //get logged in username
+        User user = userService.getByLogin(login);
+        model.addAttribute("login", user.getLogin());
         model.addAttribute("table_name", name);
         return "game";
     }
+
 }

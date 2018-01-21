@@ -11,10 +11,11 @@
     <script src="../webjars/stomp-websocket/2.3.3/stomp.min.js"></script>
     <link th:href="@{/css/table_style.css}" type="text/css" rel="stylesheet"/>
     <link th:href="@{/css/deck_style.css}" type="text/css" rel="stylesheet"/>
-    <script th:src="@{/js/connection.js}"></script>
+    <script th:inline="javascript" th:src="@{/js/connection.js}"></script>
 
     <title>Table</title>
 </head>
+<!--при загрузке сразу соединяется с сервером и создаем chair для юзера-->
 <body>
 <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <div class="container">
@@ -36,10 +37,9 @@
         </div>
     </div>
 </div>
-
 <div class="container" style="margin-top: 3em">
     <div class="starter-template">
-        <h2>Стол '<span th:text="${table_name}" />'</h2>
+        <h2>Стол '<span id="table_name" th:text="${table_name}" />'</h2>
         <div class="table">
             <div class="card_block table_card_block">
                 <div class="card diamond ace"><div class="card_value"></div></div>
@@ -81,6 +81,7 @@
         </div>
         <button id="connect" onclick="connect();">Connect</button>
         <button id="send" onclick="send();">Send</button>
+        <p id="login" th:text="${login}" th:hidden="${true}"/>
     </div>
 </div>
 

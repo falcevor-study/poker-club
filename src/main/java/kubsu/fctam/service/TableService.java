@@ -5,7 +5,6 @@ import kubsu.fctam.entity.Table;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -16,7 +15,7 @@ import java.util.stream.StreamSupport;
 public class TableService {
 
     @Autowired
-    private TableRepository repository; //
+    private TableRepository repository;
 
     // метод для сохранения одной игры
     public void save(Table table) {
@@ -30,5 +29,13 @@ public class TableService {
                         false)
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    public Table getTableByName(String name){
+        return StreamSupport
+                .stream(Spliterators.spliteratorUnknownSize(repository.findAll().iterator(), Spliterator.NONNULL),
+                        false)
+                .filter(table -> table.getName().equals(name))
+                .findFirst().orElse(null);
     }
 }

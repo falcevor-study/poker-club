@@ -1,11 +1,9 @@
 package kubsu.fctam.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import javax.persistence.*;
 import java.util.List;
 
 @Entity(name = "tTable")
@@ -20,8 +18,9 @@ public class Table implements Comparable<Table> {
     @Column(length = 50)
     private String name;
 
-    @OneToMany(mappedBy = "table")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "table") // fetch = FetchType.EAGER - чтобы стулья загружались сразу
     @OrderBy("number ASC")
+    @JsonBackReference // нужно, чтобы не было StackOverFlowException при добавлении стула
     private List<Chair> chairs;
 
 
@@ -36,11 +35,13 @@ public class Table implements Comparable<Table> {
     public void setMinBet(int minBet) { this.minBet = minBet; }
     public void setName(String name) { this.name = name; }
     public void setChairs(List<Chair> chairs) { this.chairs = chairs; }
+//    public void setGames(List<Game> games) { this.games = games; }
 
     public int getId() { return id; }
     public int getMinBet() { return minBet; }
     public String getName() { return name; }
     public List<Chair> getChairs() { return chairs; }
+//    public List<Game> getGames() { return games; }
 
     /**
      * Добавить участника к столу. Если мест нет, то ничего не делаем.
@@ -51,15 +52,22 @@ public class Table implements Comparable<Table> {
         // Если все места за столом заняты, новый стул поставить некуда.
         if (chairs.size() == 5) { return; }
 
-        // Идем по кругу и садимся за первое попавшееся свободное место.
-        int free;
-        for (free = 0; free < 5; ++free) {
-            if (chairs.get(free).getNumber() != free) { break; }
+        // если никого нет за столом, то садимся первыми
+        if (chairs.size() == 0) {
+            chair.setNumber(0);
         }
-        chair.setNumber(free);
+        // если есть, то садимся на свободное место
+        else {
+            chair.setNumber(chairs.size() + 1);
+        }
         chair.setTable(this);
         this.chairs.add(chair);
     }
+
+//    public void addGame(Game game) {
+//        game.setTable(this);
+//        this.games.add(game);
+//    }
 
     public int chairsCount() {
         return chairs.size();

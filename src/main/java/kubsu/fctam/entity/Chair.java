@@ -1,5 +1,7 @@
 package kubsu.fctam.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,6 +21,7 @@ public class Chair implements Comparable<Chair> {
 
     @ManyToOne
     @JoinColumn(name = "tableId")
+    @JsonManagedReference // нужно, чтобы не было StackOverFlowException при добавлении стула к столу
     private Table table;
 
     @Column

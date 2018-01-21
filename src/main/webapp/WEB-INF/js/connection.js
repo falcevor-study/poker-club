@@ -6,11 +6,13 @@ function connect() {
     stompClient.connect({}, function(frame) {
         console.log('Connected: ' + frame);
         stompClient.subscribe('/topic/in', function(message){
-            console.log(JSON.parse(message.body).login);
+            console.log(JSON.parse(message.body));
         });
     });
+    // send()
 }
 
 function send() {
-    stompClient.send("/app/out", {}, JSON.stringify({ 'login': 'ksenia', 'password': '123', 'money': 2000}));
+    stompClient.send("/app/out", {}, JSON.stringify({'table_name': $('#table_name').text(),
+        'login': $('#login').text()}));
 }
