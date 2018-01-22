@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+
+<head>
+    <meta charset="UTF-8"/>
+    <link href="/webjars/bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet"/>
+    <script src="/webjars/jquery/3.1.0/jquery.min.js"></script>
+    <title>Tables</title>
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/tables">Выбор стола</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/tables">Список столов</a></li>
+                <li class="active"><a href="/tables">Профиль</a></li>
+                <li><a href="/user/logout">Выйти</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="starter-template">
+        <hr/>
+        <hr/>
+        <hr/>
+        <hr/>
+        <h1>Ваш профиль</h1>
+        <form action="">
+            <div class="mb-3">
+                <label>Логин</label>
+                <input type="text" class="form-control" th:readonly="${true}" th:value="${login}"/>
+            </div>
+            <hr/>
+            <div class="mb-3">
+                <label>Количество денег на счету</label>
+                <input type="text" class="form-control" th:readonly="${true}" th:value="${money}"/>
+            </div>
+        </form>
+        <hr/>
+        <h1>Ваши максимальные выигрыши</h1>
+        <hr/>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Размер выигрыша</th>
+                <th scope="col">Дата проведения игры</th>
+                <th scope="col">Название стола</th>
+            </tr>
+            </thead>
+            <tbody class="row"  th:each="result: ${results}">
+            <tr>
+                <th scope="row"><p th:text="${result.gain}"/></th>
+                <th scope="row"><p th:text="${#dates.format(result.game.endDtm,'dd.MM.yyyy')}"/></th>
+                <th scope="row"><p th:text="${result.game.getTable().name}"/></th>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

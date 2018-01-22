@@ -1,0 +1,115 @@
+.table {
+    width: 1000px;
+    height: 512px;
+    background-image: url("/image/table.png");
+    position: relative;
+    top: 50%;
+    left: 50%;
+    margin: 0 -256px 0 -500px;
+}
+
+.card {
+    width: 60px;
+    height: 94px;
+    margin: 0 3px 0 0;
+    display: inline-block;
+    background-color: aliceblue;
+}
+
+
+.card_block {
+    margin: 0;
+    position: relative;
+}
+
+h4 {
+    text-shadow: white 2px 3px 4px;
+    display: inline;
+}
+h5 {
+    text-shadow: white 2px 3px 4px;
+    display: inline;
+}
+
+.table_card_block {
+    width: 350px;
+    height: 94px;
+    top: 210px;
+    left: 335px;
+}
+
+.player_card_block {
+    width: 200px;
+    height: 200px;
+}
+
+.player_block_1 {
+    top: 330px;
+    left: 370px;
+}
+
+.player_block_2 {
+    top: -85px;
+    left: 800px;
+}
+
+.player_block_3 {
+    top: -505px;
+    left: 580px;
+}
+
+.player_block_4 {
+    top: -705px;
+    left: 180px;
+}
+
+.player_block_5 {
+    top: -682px;
+    left: -70px;
+}
+
+.bet {
+    font-size: 9px;
+    text-shadow: black 2px 3px 4px;
+    display: inline-block;
+    position: relative;
+}
+
+
+.pot {
+    font-size: 24px;
+    top: -1020px;
+    left: 476px;
+}
+
+.bet_1 {
+    top: -720px;
+    left: 436px;
+}
+
+.bet_2 {
+    top: -880px;
+    left: 730px;
+}
+
+.bet_3 {
+    top: -1030px;
+    left: 580px;
+}
+
+.bet_4 {
+    top: -1030px;
+    left: 15%;
+}
+
+.bet_5 {
+    top: -865px;
+    left: -40px;
+}
+
+.action {
+    position: relative;
+    display: inline-block;
+    top: -651px;
+    left: 368px;
+}
