@@ -104,6 +104,15 @@
             <!-- Текущая ставка пятого игрока -->
             <div class="bet bet_5"><h3>40</h3></div>
 
+            <div class="action">
+                <button id="check" onclick="sendAction('check');">Check</button>
+                <button id="call" onclick="sendAction('call');">Call</button>
+                <button id="fold" onclick="sendAction('fold');">Fold</button>
+                <button id="raise" onclick="sendAction('raise');">Raise</button>
+                <button id="bet" onclick="sendAction('bet');">Bet</button>
+                <input id="value" type="number" value="0" min="0" max="2000" style="width: 130px"/> <!-- TODO: МАКСИМУМ = ОСТАТОК СРЕДСТВ НА РУКАХ. -->
+            </div>
+
         </div>
         <button id="connect" onclick="connect();">Connect</button>
         <button id="send" onclick="send();">Send</button>

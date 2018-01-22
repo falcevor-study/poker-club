@@ -17,6 +17,10 @@ public class TableService {
     @Autowired
     private TableRepository repository;
 
+    public Table get(int id) {
+        return repository.findOne(id);
+    }
+
     // метод для сохранения одной игры
     public void save(Table table) {
         repository.save(table);
