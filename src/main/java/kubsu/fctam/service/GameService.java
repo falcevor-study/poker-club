@@ -5,6 +5,7 @@ import kubsu.fctam.entity.Game;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -27,5 +28,14 @@ public class GameService {
                         false)
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    public void endAll() {
+        repository.findAll().forEach(
+                (game) -> {
+                    game.setEndDtm(new Date());
+                    repository.save(game);
+                }
+        );
     }
 }

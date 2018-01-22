@@ -16,7 +16,7 @@ public class CurrentState {
     private Game game;
 
     @Column
-    private long pot;
+    private int pot;
 
     @ManyToOne
     @JoinColumn(name = "tableCard1Id")
@@ -41,7 +41,7 @@ public class CurrentState {
 
     public CurrentState() {}
 
-    public CurrentState(Game game, long pot, Card tableCard1, Card tableCard2, Card tableCard3, Card tableCard4, Card tableCard5) {
+    public CurrentState(Game game, int pot, Card tableCard1, Card tableCard2, Card tableCard3, Card tableCard4, Card tableCard5) {
         this.game = game;
         this.pot = pot;
         this.tableCard1 = tableCard1;
@@ -53,7 +53,7 @@ public class CurrentState {
 
     public int getId() { return id; }
     public Game getGame() { return game; }
-    public long getPot() { return pot; }
+    public int getPot() { return pot; }
     public Card getTableCard1() { return tableCard1; }
     public Card getTableCard2() { return tableCard2; }
     public Card getTableCard3() { return tableCard3; }
@@ -61,7 +61,7 @@ public class CurrentState {
     public Card getTableCard5() { return tableCard5; }
 
     public void setGame(Game game) { this.game = game; }
-    public void setPot(long pot) { this.pot = pot; }
+    public void setPot(int pot) { this.pot = pot; }
     public void setTableCard1(Card tableCard1) { this.tableCard1 = tableCard1; }
     public void setTableCard2(Card tableCard2) { this.tableCard2 = tableCard2; }
     public void setTableCard3(Card tableCard3) { this.tableCard3 = tableCard3; }

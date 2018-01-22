@@ -1,22 +1,15 @@
 package kubsu.fctam.controller;
 
-import kubsu.fctam.dao.CardRepository;
-import kubsu.fctam.dao.ChairRepository;
 import kubsu.fctam.entity.*;
 import kubsu.fctam.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Controller
 public class IndexController {
@@ -38,6 +31,9 @@ public class IndexController {
 
     @Autowired
     CardService cardService;
+
+    @Autowired
+    ResultService resultService;
 
     @RequestMapping(value = "index")
     public String getIndex(Model model) {
@@ -82,9 +78,27 @@ public class IndexController {
     @SubscribeMapping("/disconnect/out")
     @SendTo("/topic/disconnect/in")
     public List<Table> disconnect(HashMap map) {
-        Chair chair = chairService.getChair(Integer.parseInt((String) map.get("table_id")),
-                                            Integer.parseInt((String) map.get("user_id")));
+        int tableId = Integer.parseInt((String) map.get("table_id"));
+        int userId = Integer.parseInt((String) map.get("user_id"));
+        Chair chair = chairService.getChair(tableId, userId);
         chairService.delete(chair);
+
+        Table table = tableService.get(tableId);
+        Game currentGame = tableService.getCurrentGame(table);
+
+        if (currentGame != null) {
+            if (table.getChairs().size() == 1) {
+                Chair winChair = table.getChairs().get(0);
+                User user = winChair.getUser();
+                CurrentState currentState = stateService.getStateByGame(currentGame);
+                Result result = new Result(user, currentGame, chair.getBet(), currentState.getPot());
+                resultService.save(result);
+            }
+            if (table.getChairs().size() <= 1) {
+                currentGame.setEndDtm(new Date());
+                gameService.save(currentGame);
+            }
+        }
         return tableService.getAll(); // надо передавать какой-то объект, а то сокеты не хотят без объекта коннектиться
     }
 

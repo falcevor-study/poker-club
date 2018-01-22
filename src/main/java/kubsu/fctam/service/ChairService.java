@@ -20,6 +20,8 @@ public class ChairService {
 
     public void delete(Chair chair) { chairRepository.delete(chair); }
 
+    public void deleteAll() { chairRepository.deleteAll(); }
+
     public Chair getChair(int table_id, int user_id){
         return StreamSupport
                 .stream(Spliterators.spliteratorUnknownSize(chairRepository.findAll().iterator(), Spliterator.NONNULL),
