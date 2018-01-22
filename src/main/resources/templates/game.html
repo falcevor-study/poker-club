@@ -37,53 +37,82 @@
         </div>
     </div>
 </div>
+
 <div class="container" style="margin-top: 3em">
     <div class="starter-template">
         <h2>Стол '<span id="table_name" th:text="${table_name}" />'</h2>
         <div class="table">
+            <!-- Блок карт на столе -->
             <div class="card_block table_card_block">
-                <div class="card diamond ace"><div class="card_value"></div></div>
-                <div class="card club two"><div class="card_value"></div></div>
-                <div class="card heart three"><div class="card_value"></div></div>
-                <div class="card none"><div class="card_value"></div></div>
-                <div class="card none"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
             </div>
+
+            <!-- Блок карт на руках первого игрока -->
             <div class="card_block player_card_block player_block_1">
                 <h4>Игрок 1</h4>
-                <div class="card heart king"><div class="card_value"></div></div>
-                <div class="card spade queen"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
                 <h5>2000</h5>
             </div>
+
+            <!-- Блок карт на руках второго игрока -->
             <div class="card_block player_card_block player_block_2">
                 <h4>Игрок 2</h4>
-                <div class="card reverse"><div class="card_value"></div></div>
-                <div class="card reverse"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
                 <h5>2000</h5>
             </div>
+
+            <!-- Блок карт на руках третьего игрока -->
             <div class="card_block player_card_block player_block_3">
                 <h4>Игрок 3</h4>
-                <div class="card reverse"><div class="card_value"></div></div>
-                <div class="card reverse"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
                 <h5>2000</h5>
             </div>
+
+            <!-- Блок карт на руках четвертого игрока -->
             <div class="card_block player_card_block player_block_4">
                 <h4>Игрок 4</h4>
-                <div class="card reverse"><div class="card_value"></div></div>
-                <div class="card reverse"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
                 <h5>2000</h5>
             </div>
+
+            <!-- Блок карт на руках пятого игрока -->
             <div class="card_block player_card_block player_block_5">
                 <h4>Игрок 5</h4>
-                <div class="card reverse"><div class="card_value"></div></div>
-                <div class="card reverse"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
+                <div class="card"><div class="card_value"></div></div>
                 <h5>2000</h5>
             </div>
+
+            <!-- Сумма кона -->
+            <div class="bet pot"><h3>777</h3></div>
+            <!-- Текущая ставка первого игрока -->
+            <div class="bet bet_1"><h3>20</h3></div>
+            <!-- Текущая ставка второго игрока -->
+            <div class="bet bet_2"><h3>20</h3></div>
+            <!-- Текущая ставка третьего игрока -->
+            <div class="bet bet_3"><h3>20</h3></div>
+            <!-- Текущая ставка четвертого игрока -->
+            <div class="bet bet_4"><h3>20</h3></div>
+            <!-- Текущая ставка пятого игрока -->
+            <div class="bet bet_5"><h3>40</h3></div>
+
         </div>
         <button id="connect" onclick="connect();">Connect</button>
         <button id="send" onclick="send();">Send</button>
-        <p id="login" th:text="${login}" th:hidden="${true}"/>
     </div>
 </div>
+
+<p id="login" th:text="${login}" th:hidden="${true}"/>
+<p id="user_id" th:text="${user_id}" th:hidden="${true}"/>
+<p id="table_id" th:text="${table_id}" th:hidden="${true}"/>
 
 </body>
 </html>
