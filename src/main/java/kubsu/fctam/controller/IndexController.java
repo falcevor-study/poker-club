@@ -1,11 +1,9 @@
 package kubsu.fctam.controller;
 
-import kubsu.fctam.entity.Chair;
-import kubsu.fctam.entity.Game;
-import kubsu.fctam.entity.Table;
-import kubsu.fctam.entity.User;
-import kubsu.fctam.service.TableService;
-import kubsu.fctam.service.UserService;
+import kubsu.fctam.dao.CardRepository;
+import kubsu.fctam.dao.ChairRepository;
+import kubsu.fctam.entity.*;
+import kubsu.fctam.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
@@ -16,6 +14,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 
 @Controller
 public class IndexController {
@@ -24,7 +25,19 @@ public class IndexController {
     UserService userService;
 
     @Autowired
+    GameService gameService;
+
+    @Autowired
     TableService tableService;
+
+    @Autowired
+    ChairService chairService;
+
+    @Autowired
+    CurrentStateService stateService;
+
+    @Autowired
+    CardService cardService;
 
     @RequestMapping(value = "index")
     public String getIndex(Model model) {
@@ -37,11 +50,11 @@ public class IndexController {
      * @param map - то, что отправляет клиент
      * @return - возвращает объекты в виде JSON
      */
-    @SubscribeMapping("/out")
-    @SendTo("/topic/in")
+    @SubscribeMapping("/tableInvitation")
+    @SendTo("/topic/invitation")
     public Chair testConn(HashMap map) {
-        User user = userService.getByLogin((String) map.get("login"));
-        Table table = tableService.getTableByName((String) map.get("table_name"));
+        User user = userService.get(Integer.parseInt((String) map.get("user_id")));
+        Table table = tableService.get(Integer.parseInt((String) map.get("table_id")));
         if (table != null) {
             Chair chair = new Chair(
                     user,
@@ -49,12 +62,178 @@ public class IndexController {
                     -1,
                     "watcher",
                     0,
+                    Integer.parseInt((String) map.get("userPot")),
                     null,
                     null);
             table.addChair(chair);
+            chairService.save(chair);
             return chair;
         }
         else
             return null;
+    }
+
+
+    /**
+     * метод удаляет стул юзера при выходе из игры
+     * @param map - тут содержится table_id и user_id
+     * @return - какой-то объект, иначе сокеты не работают, мда
+     */
+    @SubscribeMapping("/disconnect/out")
+    @SendTo("/topic/disconnect/in")
+    public List<Table> disconnect(HashMap map) {
+        Chair chair = chairService.getChair(Integer.parseInt((String) map.get("table_id")),
+                                            Integer.parseInt((String) map.get("user_id")));
+        chairService.delete(chair);
+        return tableService.getAll(); // надо передавать какой-то объект, а то сокеты не хотят без объекта коннектиться
+    }
+
+
+    /**
+     * метод для вывода списка стульев
+     * @param map - тут находится table_id
+     * @return - список стульев у данного стола
+     */
+    @SubscribeMapping("/chairs/out")
+    @SendTo("/topic/chairs/in")
+    public List<Chair> getTableChairs(HashMap map) {
+        Table table = tableService.get(Integer.parseInt((String) map.get("table_id")));
+        return table.getChairs();
+    }
+
+
+    /**
+     * метод, который раздает карты на всех моментах игры (и в начале, и в конце)
+     * @param map - то, что пришло от клиента
+     *            используется пока что только table_id, в дальнейшем надо будет юзать и chair (для реализации ставок)
+     * @return - isNewGame - булева переменная, показывает, что игра еще не началась
+     *           currentGameState - текущее состояние игры (эклемпляр объекта CurrentState)
+     *           chairs - список стульев около стола
+     */
+    @SubscribeMapping("/startgame/out")
+    @SendTo("/topic/startgame/in")
+    public HashMap<String, Object> startGame(HashMap map) {
+        Table table = tableService.get(Integer.parseInt((String) map.get("table_id")));
+        Game currentGame = tableService.getCurrentGame(table);
+        HashMap<String, Object> outputMap = new HashMap<>();
+
+        if (currentGame == null && table.chairsCount() > 1) {
+            // TODO вот тут почему-то уже есть объект game, хотя его не должно быть
+            Game newGame = new Game(null, null, null);
+            table.addGame(newGame);
+            gameService.save(newGame);
+            outputMap.put("isNewGame", false);
+
+            CurrentState state = new CurrentState(null, 0, null, null, null, null, null);
+            newGame.setState(state);
+            stateService.save(state);
+            outputMap.put("currentGameState", state);
+
+            int[] randomCards = randomWithoutDuplicates(table.chairsCount()*2, null);
+            int card_number = 0;
+            for (Chair chair : table.getChairs()) {
+                chair.setStatus("player");
+                chair.setCard1(cardService.get(randomCards[card_number]));
+                chair.setCard2(cardService.get(randomCards[card_number+1]));
+                card_number += 2;
+                chairService.save(chair);
+            }
+            outputMap.put("chairs", table.getChairs());
+
+            return outputMap;
+        }
+        else {
+            if (table.chairsCount() == 1) {
+                outputMap.put("isNewGame", true);
+                outputMap.put("currentGameState", null);
+                outputMap.put("chairs", table.getChairs());
+                return outputMap;
+            }
+            if (currentGame != null && table.chairsCount() > 1) {
+                CurrentState state = currentGame.getState();
+                HashSet<Integer> exclude = new HashSet<>();
+                for (Chair chair : table.getChairs()) {
+                    exclude.add(chair.getCard1().getId());
+                    exclude.add(chair.getCard2().getId());
+                }
+                if (amountOfTableCards(state) == 0) {
+                    int[] randomCards = randomWithoutDuplicates(3, exclude);
+                    state.setTableCard1(cardService.get(randomCards[0]));
+                    state.setTableCard1(cardService.get(randomCards[1]));
+                    state.setTableCard1(cardService.get(randomCards[2]));
+                }
+                if (amountOfTableCards(state) == 3) {
+                    exclude.add(state.getTableCard1().getId());
+                    exclude.add(state.getTableCard2().getId());
+                    exclude.add(state.getTableCard3().getId());
+                    int[] randomCards = randomWithoutDuplicates(1, exclude);
+                    state.setTableCard4(cardService.get(randomCards[0]));
+                }
+                if (amountOfTableCards(state) == 4) {
+                    exclude.add(state.getTableCard1().getId());
+                    exclude.add(state.getTableCard2().getId());
+                    exclude.add(state.getTableCard3().getId());
+                    exclude.add(state.getTableCard4().getId());
+                    int[] randomCards = randomWithoutDuplicates(1, exclude);
+                    state.setTableCard5(cardService.get(randomCards[0]));
+                }
+                stateService.save(state);
+                outputMap.put("currentGameState", state);
+                outputMap.put("chairs", table.getChairs());
+                outputMap.put("isNewGame", false);
+                return outputMap;
+            }
+        }
+//        return table.getChairs();
+        return null;
+    }
+
+
+    /**
+     * метод, который возвращает массив рандомных неповторяющихся чисел на отрезке [3; 54]
+     * @param arr_size - количество рандомных чисел в результирующем массиве
+     * @param exclude - те числа, которые надо исключить из результирующего массива
+     * @return - массив рандомных уникальных чисел
+     */
+    private int[] randomWithoutDuplicates(int arr_size, HashSet<Integer> exclude){
+        int[] result = new int[arr_size];
+        Random random = new Random();
+        HashSet<Integer> used = new HashSet<Integer>();
+        for (int i = 0; i < arr_size; i++) {
+            int add = random.nextInt(52) + 3; //this is the int we are adding
+            if (exclude == null) {
+                while (used.contains(add)) { //while we have already used the number
+                    add = random.nextInt(52) + 3; //generate a new one because it's already used
+                }
+            }
+            else {
+                while (used.contains(add) && exclude.contains(add)) { //while we have already used the number
+                    add = random.nextInt(52) + 3; //generate a new one because it's already used
+                }
+            }
+            used.add(add);
+            result[i] = add;
+        }
+        return result;
+    }
+
+    /**
+     * метод для того, чтобы выяснить, сколько карт на столе
+     * @param state - состояние, у которого есть 5 полей для карт
+     * @return количество инициализованный карт состояния
+     */
+    private int amountOfTableCards(CurrentState state) {
+        int cardCount = 0;
+        if (state.getTableCard1() != null)
+            ++cardCount;
+        if (state.getTableCard2() != null)
+            ++cardCount;
+        if (state.getTableCard3() != null)
+            ++cardCount;
+        if (state.getTableCard4() != null)
+            ++cardCount;
+        if (state.getTableCard5() != null)
+            ++cardCount;
+        return cardCount;
     }
 }

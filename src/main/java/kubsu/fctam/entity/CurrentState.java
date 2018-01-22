@@ -1,5 +1,7 @@
 package kubsu.fctam.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 
 @Entity(name = "tCurrentState")
@@ -10,6 +12,7 @@ public class CurrentState {
 
     @OneToOne
     @JoinColumn(name = "gameId")
+    @JsonManagedReference // нужно, чтобы не было StackOverFlowException
     private Game game;
 
     @Column
@@ -38,6 +41,15 @@ public class CurrentState {
 
     public CurrentState() {}
 
+    public CurrentState(Game game, long pot, Card tableCard1, Card tableCard2, Card tableCard3, Card tableCard4, Card tableCard5) {
+        this.game = game;
+        this.pot = pot;
+        this.tableCard1 = tableCard1;
+        this.tableCard2 = tableCard2;
+        this.tableCard3 = tableCard3;
+        this.tableCard4 = tableCard4;
+        this.tableCard5 = tableCard5;
+    }
 
     public int getId() { return id; }
     public Game getGame() { return game; }

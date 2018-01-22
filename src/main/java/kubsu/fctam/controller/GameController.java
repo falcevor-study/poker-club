@@ -1,5 +1,6 @@
 package kubsu.fctam.controller;
 
+import kubsu.fctam.entity.Chair;
 import kubsu.fctam.entity.CurrentState;
 import kubsu.fctam.entity.Table;
 import kubsu.fctam.entity.User;
@@ -7,13 +8,16 @@ import kubsu.fctam.service.TableService;
 import kubsu.fctam.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.HashMap;
+import java.util.List;
 
 @Controller
 @RequestMapping("/game")

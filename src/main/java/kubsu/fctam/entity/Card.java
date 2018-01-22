@@ -22,11 +22,11 @@ public class Card {
 
     public Card() {}
 
+    public int getId() { return id; }
     public String getSuit() { return suit; }
     public String getValue() { return value; }
     public int getRate() { return rate; }
 
-    public void setId(int id) { this.id = id; }
     public void setSuit(String suit) { this.suit = suit; }
     public void setValue(String value) { this.value = value; }
     public void setRate(int rate) { this.rate = rate; }

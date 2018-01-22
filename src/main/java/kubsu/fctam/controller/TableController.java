@@ -24,7 +24,12 @@ public class TableController {
 
     @RequestMapping
     public String mainPage(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String login = auth.getName(); //get logged in username
+        User user = userService.getByLogin(login);
+
         model.addAttribute("tables", tableService.getAll());
+        model.addAttribute("user_id", user.getId());
         return "table_selection";
     }
 

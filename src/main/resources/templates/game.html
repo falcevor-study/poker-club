@@ -11,12 +11,16 @@
     <script src="../webjars/stomp-websocket/2.3.3/stomp.min.js"></script>
     <link th:href="@{/css/table_style.css}" type="text/css" rel="stylesheet"/>
     <link th:href="@{/css/deck_style.css}" type="text/css" rel="stylesheet"/>
-    <script th:inline="javascript" th:src="@{/js/connection.js}"></script>
-
+    <script th:inline="javascript" th:src="@{/js/gameConnection.js}"></script>
+    <!--<script>-->
+        <!--$( window ).unload(function() {-->
+            <!--disconnect();-->
+        <!--});-->
+    <!--</script>-->
     <title>Table</title>
 </head>
 <!--при загрузке сразу соединяется с сервером и создаем chair для юзера-->
-<body>
+<body onload="connect(); getChairs();">
 <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <div class="container">
         <div class="navbar-header">
@@ -53,42 +57,42 @@
 
             <!-- Блок карт на руках первого игрока -->
             <div class="card_block player_card_block player_block_1">
-                <h4>Игрок 1</h4>
-                <div class="card"><div class="card_value"></div></div>
-                <div class="card"><div class="card_value"></div></div>
-                <h5>2000</h5>
+                <h4 id="player1_name">Игрок 1</h4>
+                <div id="player1_card1" class="card"><div class="card_value"></div></div>
+                <div id="player1_card2" class="card"><div class="card_value"></div></div>
+                <h5 id="player1_pot">2000</h5>
             </div>
 
             <!-- Блок карт на руках второго игрока -->
             <div class="card_block player_card_block player_block_2">
-                <h4>Игрок 2</h4>
-                <div class="card"><div class="card_value"></div></div>
-                <div class="card"><div class="card_value"></div></div>
-                <h5>2000</h5>
+                <h4 id="player2_name">Игрок 2</h4>
+                <div id="player2_card1" class="card"><div class="card_value"></div></div>
+                <div id="player2_card2" class="card"><div class="card_value"></div></div>
+                <h5 id="player2_pot">2000</h5>
             </div>
 
             <!-- Блок карт на руках третьего игрока -->
             <div class="card_block player_card_block player_block_3">
-                <h4>Игрок 3</h4>
-                <div class="card"><div class="card_value"></div></div>
-                <div class="card"><div class="card_value"></div></div>
-                <h5>2000</h5>
+                <h4 id="player3_name">Игрок 3</h4>
+                <div id="player3_card1" class="card"><div class="card_value"></div></div>
+                <div id="player3_card2" class="card"><div class="card_value"></div></div>
+                <h5 id="player3_pot">2000</h5>
             </div>
 
             <!-- Блок карт на руках четвертого игрока -->
             <div class="card_block player_card_block player_block_4">
-                <h4>Игрок 4</h4>
-                <div class="card"><div class="card_value"></div></div>
-                <div class="card"><div class="card_value"></div></div>
-                <h5>2000</h5>
+                <h4 id="player4_name">Игрок 4</h4>
+                <div id="player4_card1" class="card"><div class="card_value"></div></div>
+                <div id="player4_card2" class="card"><div class="card_value"></div></div>
+                <h5 id="player4_pot">2000</h5>
             </div>
 
             <!-- Блок карт на руках пятого игрока -->
             <div class="card_block player_card_block player_block_5">
-                <h4>Игрок 5</h4>
-                <div class="card"><div class="card_value"></div></div>
-                <div class="card"><div class="card_value"></div></div>
-                <h5>2000</h5>
+                <h4 id="player5_name">Игрок 5</h4>
+                <div id="player5_card1" class="card"><div class="card_value"></div></div>
+                <div id="player5_card2" class="card"><div class="card_value"></div></div>
+                <h5 id="player5_pot">2000</h5>
             </div>
 
             <!-- Сумма кона -->
@@ -114,8 +118,9 @@
             </div>
 
         </div>
-        <button id="connect" onclick="connect();">Connect</button>
-        <button id="send" onclick="send();">Send</button>
+        <!--выходом из игры обязательно долдна быть ссылка, а не редирект,
+            иначе будет редирект всех юзеров разом, а как без ссылки сделать, я хз -->
+        <a th:onclick="'disconnect();'" th:href="@{/tables}">Выйти из игры</a>
     </div>
 </div>
 
