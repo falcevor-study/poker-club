@@ -1,5 +1,5 @@
 var stompClient = null;
-window.addEventListener("beforeunload", disconnect);
+//window.addEventListener("beforeunload", disconnect);
 
 function connect() {
     // disable_buttons(); TODO: УБРАТЬ КОММЕНТАРИЙ
@@ -35,17 +35,17 @@ function connect() {
             var responce = JSON.parse(message.body);
             console.log(responce);
             var state = responce.currentGameState;
-            if (responce.isNewGame === false) {
-                if (state.card1 == null && state.card2 == null && state.card3 == null && state.card4 == null && state.card5 == null) {
+            if (responce.isNewGame == false) {
+                if (state.tableCard1 == null && state.tableCard2 == null && state.tableCard3 == null && state.tableCard4 == null && state.tableCard5 == null) {
                     preflop(state, responce.chairs)
                 }
-                if (state.card1 != null && state.card2 != null && state.card3 != null && state.card4 == null && state.card5 == null) {
+                if (state.tableCard1 != null && state.tableCard2 != null && state.tableCard3 != null && state.tableCard4 == null && state.tableCard5 == null) {
                     flop(state, responce.chairs)
                 }
-                if (state.card1 != null && state.card2 != null && state.card3 != null && state.card4 != null && state.card5 == null) {
+                if (state.tableCard1 != null && state.tableCard2 != null && state.tableCard3 != null && state.tableCard4 != null && state.tableCard5 == null) {
                     tern(state, responce.chairs)
                 }
-                if (state.card1 != null && state.card2 != null && state.card3 != null && state.card4 != null && state.card5 != null) {
+                if (state.tableCard1 != null && state.tableCard2 != null && state.tableCard3 != null && state.tableCard4 != null && state.tableCard5 != null) {
                     river(state, responce.chairs)
                 }
             }
@@ -65,26 +65,27 @@ function disconnect() {
 }
 
 
-function river(chairs) {
+function river(currentGameState, chairs) {
     console.log('river')
-    update_cards(chairs);
+    update_cards(currentGameState, chairs);
 }
 
 
-function tern(chairs) {
+function tern(currentGameState, chairs) {
     console.log('tern')
-    update_cards(chairs);
+    update_cards(currentGameState, chairs);
 }
 
 
-function flop(chairs) {
+function flop(currentGameState, chairs) {
     console.log('flop');
-    update_cards(chairs);
+    update_cards(currentGameState, chairs);
 }
 
 
 function preflop(currentGameState, chairs) {
-    update_cards(chairs);
+    console.log('preflop');
+    update_cards(currentGameState, chairs);
 }
 
 
@@ -163,20 +164,49 @@ function card_update_request(action) {
 
 
 /**
- * Обновить визуализацию карт у всех юзеров
- * TODO надо добавить еще визуализацию для карт на столе
+ * Обновить визуализацию карт.
  */
-function update_cards(chairs) {
+function update_cards(state, chairs) {
+    if (state.tableCard1 != null) {
+        $("table_card_1").attr('class', 'card ' + state.tableCard1.suit + ' ' + state.tableCard1.value);
+    } else {
+        $("table_card_1").attr('class', 'card none');
+    }
+
+    if (state.tableCard2 != null) {
+        $("table_card_2").attr('class', 'card ' + state.tableCard2.suit + ' ' + state.tableCard2.value);
+    } else {
+        $("table_card_2").attr('class', 'card none');
+    }
+
+    if (state.tableCard3 != null) {
+        $("table_card_3").attr('class', 'card ' + state.tableCard3.suit + ' ' + state.tableCard3.value);
+    } else {
+        $("table_card_3").attr('class', 'card none');
+    }
+
+    if (state.tableCard4 != null) {
+        $("table_card_4").attr('class', 'card ' + state.tableCard4.suit + ' ' + state.tableCard4.value);
+    } else {
+        $("table_card_4").attr('class', 'card none');
+    }
+
+    if (state.tableCard5 != null) {
+        $("table_card_5").attr('class', 'card ' + state.tableCard5.suit + ' ' + state.tableCard5.value);
+    } else {
+        $("table_card_5").attr('class', 'card none');
+    }
+
     var chairCount = 1;
     for (var key in chairs){
         var new_card1_class = 'card';
         var new_card2_class = 'card';
-        if (parseInt($('#user_id').text()) == chairs[key].user.id && chairs[key].user.status == "player") {
+        if (parseInt($('#user_id').text()) == chairs[key].user.id && chairs[key].status == "player") {
             new_card1_class = 'card ' + chairs[key].card1.suit +' '+chairs[key].card1.value;
             new_card2_class = 'card ' + chairs[key].card2.suit +' '+chairs[key].card2.value;
         }
         else {
-            if (chairs[key].user.status == "player") {
+            if (chairs[key].status == "player") {
                 new_card1_class = 'card reverse';
                 new_card2_class = 'card reverse';
             }

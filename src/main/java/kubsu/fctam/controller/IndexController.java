@@ -131,8 +131,9 @@ public class IndexController {
         Game currentGame = tableService.getCurrentGame(table);
         HashMap<String, Object> outputMap = new HashMap<>();
 
+
         if (currentGame == null && table.chairsCount() > 1) {
-            // TODO вот тут почему-то уже есть объект game, хотя его не должно быть
+            // Игроков хватает, но игры нет. Создадим ее!
             Game newGame = new Game(null, null, null);
             table.addGame(newGame);
             gameService.save(newGame);
@@ -156,50 +157,63 @@ public class IndexController {
 
             return outputMap;
         }
-        else {
-            if (table.chairsCount() == 1) {
-                outputMap.put("isNewGame", true);
-                outputMap.put("currentGameState", null);
-                outputMap.put("chairs", table.getChairs());
-                return outputMap;
-            }
-            if (currentGame != null && table.chairsCount() > 1) {
-                CurrentState state = currentGame.getState();
-                HashSet<Integer> exclude = new HashSet<>();
-                for (Chair chair : table.getChairs()) {
-                    exclude.add(chair.getCard1().getId());
-                    exclude.add(chair.getCard2().getId());
-                }
-                if (amountOfTableCards(state) == 0) {
-                    int[] randomCards = randomWithoutDuplicates(3, exclude);
-                    state.setTableCard1(cardService.get(randomCards[0]));
-                    state.setTableCard1(cardService.get(randomCards[1]));
-                    state.setTableCard1(cardService.get(randomCards[2]));
-                }
-                if (amountOfTableCards(state) == 3) {
-                    exclude.add(state.getTableCard1().getId());
-                    exclude.add(state.getTableCard2().getId());
-                    exclude.add(state.getTableCard3().getId());
-                    int[] randomCards = randomWithoutDuplicates(1, exclude);
-                    state.setTableCard4(cardService.get(randomCards[0]));
-                }
-                if (amountOfTableCards(state) == 4) {
-                    exclude.add(state.getTableCard1().getId());
-                    exclude.add(state.getTableCard2().getId());
-                    exclude.add(state.getTableCard3().getId());
-                    exclude.add(state.getTableCard4().getId());
-                    int[] randomCards = randomWithoutDuplicates(1, exclude);
-                    state.setTableCard5(cardService.get(randomCards[0]));
-                }
-                stateService.save(state);
-                outputMap.put("currentGameState", state);
-                outputMap.put("chairs", table.getChairs());
-                outputMap.put("isNewGame", false);
-                return outputMap;
-            }
+
+        if (currentGame != null && table.chairsCount() == 1) {
+            // Один игрок. Играет. Один?? Не, не пойдет. Завершаем игру.
+            currentGame.setEndDtm(new Date());
+            gameService.save(currentGame);
+            currentGame = null;
         }
-//        return table.getChairs();
-        return null;
+
+        if (currentGame == null && table.chairsCount() == 1) {
+            // Один игрок. Игры, естественно, нет. Пускай ждет. Но ответ все равно получит.
+            outputMap.put("isNewGame", true);
+            outputMap.put("currentGameState", null);
+            outputMap.put("chairs", table.getChairs());
+            return outputMap;
+        }
+
+        // Иначе отдаем текущее состояние игры.
+        outputMap.put("isNewGame", false);
+        outputMap.put("currentGameState", stateService.getStateByGame(currentGame));
+        outputMap.put("chairs", table.getChairs());
+        return outputMap;
+
+            // Блок перехода на следующий этап торгов, он должен быть не тут.
+//            if (currentGame != null && table.chairsCount() > 1) {
+//                CurrentState state = currentGame.getState();
+//                HashSet<Integer> exclude = new HashSet<>();
+//                for (Chair chair : table.getChairs()) {
+//                    exclude.add(chair.getCard1().getId());
+//                    exclude.add(chair.getCard2().getId());
+//                }
+//                if (amountOfTableCards(state) == 0) {
+//                    int[] randomCards = randomWithoutDuplicates(3, exclude);
+//                    state.setTableCard1(cardService.get(randomCards[0]));
+//                    state.setTableCard2(cardService.get(randomCards[1]));
+//                    state.setTableCard3(cardService.get(randomCards[2]));
+//                }
+//                if (amountOfTableCards(state) == 3) {
+//                    exclude.add(state.getTableCard1().getId());
+//                    exclude.add(state.getTableCard2().getId());
+//                    exclude.add(state.getTableCard3().getId());
+//                    int[] randomCards = randomWithoutDuplicates(1, exclude);
+//                    state.setTableCard4(cardService.get(randomCards[0]));
+//                }
+//                if (amountOfTableCards(state) == 4) {
+//                    exclude.add(state.getTableCard1().getId());
+//                    exclude.add(state.getTableCard2().getId());
+//                    exclude.add(state.getTableCard3().getId());
+//                    exclude.add(state.getTableCard4().getId());
+//                    int[] randomCards = randomWithoutDuplicates(1, exclude);
+//                    state.setTableCard5(cardService.get(randomCards[0]));
+//                }
+//                stateService.save(state);
+//                outputMap.put("currentGameState", state);
+//                outputMap.put("chairs", table.getChairs());
+//                outputMap.put("isNewGame", false);
+//                return outputMap;
+//            }
     }
 
 
