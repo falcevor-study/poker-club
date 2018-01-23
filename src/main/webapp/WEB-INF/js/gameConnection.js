@@ -52,24 +52,28 @@ function disconnect() {
 function river(currentGameState, chairs) {
     console.log('river');
     update_cards(currentGameState, chairs);
+    update_bets(currentGameState, chairs);
 }
 
 
 function tern(currentGameState, chairs) {
     console.log('tern');
     update_cards(currentGameState, chairs);
+    update_bets(currentGameState, chairs);
 }
 
 
 function flop(currentGameState, chairs) {
     console.log('flop');
     update_cards(currentGameState, chairs);
+    update_bets(currentGameState, chairs);
 }
 
 
 function preflop(currentGameState, chairs) {
     console.log('preflop');
     update_cards(currentGameState, chairs);
+    update_bets(currentGameState, chairs);
 }
 
 
@@ -137,33 +141,33 @@ function sendAction(action) {
  */
 function update_cards(state, chairs) {
     if (state.tableCard1 != null) {
-        $("table_card_1").attr('class', 'card ' + state.tableCard1.suit + ' ' + state.tableCard1.value);
+        $("#table_card_1").attr('class', 'card ' + state.tableCard1.suit + ' ' + state.tableCard1.value);
     } else {
-        $("table_card_1").attr('class', 'card none');
+        $("#table_card_1").attr('class', 'card none');
     }
 
     if (state.tableCard2 != null) {
-        $("table_card_2").attr('class', 'card ' + state.tableCard2.suit + ' ' + state.tableCard2.value);
+        $("#table_card_2").attr('class', 'card ' + state.tableCard2.suit + ' ' + state.tableCard2.value);
     } else {
-        $("table_card_2").attr('class', 'card none');
+        $("#table_card_2").attr('class', 'card none');
     }
 
     if (state.tableCard3 != null) {
-        $("table_card_3").attr('class', 'card ' + state.tableCard3.suit + ' ' + state.tableCard3.value);
+        $("#table_card_3").attr('class', 'card ' + state.tableCard3.suit + ' ' + state.tableCard3.value);
     } else {
-        $("table_card_3").attr('class', 'card none');
+        $("#table_card_3").attr('class', 'card none');
     }
 
     if (state.tableCard4 != null) {
-        $("table_card_4").attr('class', 'card ' + state.tableCard4.suit + ' ' + state.tableCard4.value);
+        $("#table_card_4").attr('class', 'card ' + state.tableCard4.suit + ' ' + state.tableCard4.value);
     } else {
-        $("table_card_4").attr('class', 'card none');
+        $("#table_card_4").attr('class', 'card none');
     }
 
     if (state.tableCard5 != null) {
-        $("table_card_5").attr('class', 'card ' + state.tableCard5.suit + ' ' + state.tableCard5.value);
+        $("#table_card_5").attr('class', 'card ' + state.tableCard5.suit + ' ' + state.tableCard5.value);
     } else {
-        $("table_card_5").attr('class', 'card none');
+        $("#table_card_5").attr('class', 'card none');
     }
 
     var chairCount = 1;
@@ -188,6 +192,25 @@ function update_cards(state, chairs) {
         var old_card2_class = '#player'+chairCount+'_card2';
         $(old_card1_class).attr('class', new_card1_class);
         $(old_card2_class).attr('class', new_card2_class);
+        chairCount += 1;
+    }
+}
+
+
+function update_bets(state, chairs) {
+    $("#table_pot").text(state.pot);
+
+    var chairCount = 1;
+    for (var key in chairs){
+        var bet = null;
+        if (chairs[key].status == "player") {
+            bet = chairs[key].bet;
+        }
+        else {
+            bet = '';
+        }
+        var bet_id = '#bet_'+chairCount;
+        $(bet_id).text(bet);
         chairCount += 1;
     }
 }

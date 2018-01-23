@@ -57,70 +57,71 @@
 
             <!-- Блок карт на руках первого игрока -->
             <div class="card_block player_card_block player_block_1">
-                <h4 id="player1_name">Игрок 1</h4>
+                <h4 id="player1_name"></h4>
                 <div id="player1_card1" class="card"><div class="card_value"></div></div>
                 <div id="player1_card2" class="card"><div class="card_value"></div></div>
-                <h5 id="player1_pot">2000</h5>
+                <h5 id="player1_pot"></h5>
             </div>
 
             <!-- Блок карт на руках второго игрока -->
             <div class="card_block player_card_block player_block_2">
-                <h4 id="player2_name">Игрок 2</h4>
+                <h4 id="player2_name"></h4>
                 <div id="player2_card1" class="card"><div class="card_value"></div></div>
                 <div id="player2_card2" class="card"><div class="card_value"></div></div>
-                <h5 id="player2_pot">2000</h5>
+                <h5 id="player2_pot"></h5>
             </div>
 
             <!-- Блок карт на руках третьего игрока -->
             <div class="card_block player_card_block player_block_3">
-                <h4 id="player3_name">Игрок 3</h4>
+                <h4 id="player3_name"></h4>
                 <div id="player3_card1" class="card"><div class="card_value"></div></div>
                 <div id="player3_card2" class="card"><div class="card_value"></div></div>
-                <h5 id="player3_pot">2000</h5>
+                <h5 id="player3_pot"></h5>
             </div>
 
             <!-- Блок карт на руках четвертого игрока -->
             <div class="card_block player_card_block player_block_4">
-                <h4 id="player4_name">Игрок 4</h4>
+                <h4 id="player4_name"></h4>
                 <div id="player4_card1" class="card"><div class="card_value"></div></div>
                 <div id="player4_card2" class="card"><div class="card_value"></div></div>
-                <h5 id="player4_pot">2000</h5>
+                <h5 id="player4_pot"></h5>
             </div>
 
             <!-- Блок карт на руках пятого игрока -->
             <div class="card_block player_card_block player_block_5">
-                <h4 id="player5_name">Игрок 5</h4>
+                <h4 id="player5_name"></h4>
                 <div id="player5_card1" class="card"><div class="card_value"></div></div>
                 <div id="player5_card2" class="card"><div class="card_value"></div></div>
-                <h5 id="player5_pot">2000</h5>
+                <h5 id="player5_pot"></h5>
             </div>
 
             <!-- Сумма кона -->
-            <div class="bet pot"><h3>777</h3></div>
+            <div class="bet pot"><h3 id="table_pot"></h3></div>
             <!-- Текущая ставка первого игрока -->
-            <div class="bet bet_1"><h3>20</h3></div>
+            <div class="bet bet_1"><h3 id="bet_1"></h3></div>
             <!-- Текущая ставка второго игрока -->
-            <div class="bet bet_2"><h3>20</h3></div>
+            <div class="bet bet_2"><h3 id="bet_2"></h3></div>
             <!-- Текущая ставка третьего игрока -->
-            <div class="bet bet_3"><h3>20</h3></div>
+            <div class="bet bet_3"><h3 id="bet_3"></h3></div>
             <!-- Текущая ставка четвертого игрока -->
-            <div class="bet bet_4"><h3>20</h3></div>
+            <div class="bet bet_4"><h3 id="bet_4"></h3></div>
             <!-- Текущая ставка пятого игрока -->
-            <div class="bet bet_5"><h3>40</h3></div>
+            <div class="bet bet_5"><h3 id="bet_5"></h3></div>
 
-            <div class="action">
-                <button id="check" onclick="sendAction('check');">Check</button>
-                <button id="call" onclick="sendAction('call');">Call</button>
-                <button id="fold" onclick="sendAction('fold');">Fold</button>
-                <button id="raise" onclick="sendAction('raise');">Raise</button>
-                <button id="bet" onclick="sendAction('bet');">Bet</button>
-                <input id="value" type="number" value="0" min="0" max="2000" style="width: 130px"/> <!-- TODO: МАКСИМУМ = ОСТАТОК СРЕДСТВ НА РУКАХ. -->
-            </div>
 
         </div>
         <!--выходом из игры обязательно долдна быть ссылка, а не редирект,
             иначе будет редирект всех юзеров разом, а как без ссылки сделать, я хз -->
         <a th:onclick="'disconnect();'" th:href="@{/tables}">Выйти из игры</a>
+
+        <div class="action">
+            <button id="check" onclick="sendAction('check');">Check</button>
+            <button id="call" onclick="sendAction('call');">Call</button>
+            <button id="fold" onclick="sendAction('fold');">Fold</button>
+            <button id="raise" onclick="sendAction('raise');">Raise</button>
+            <button id="bet" onclick="sendAction('bet');">Bet</button>
+            <input id="value" type="number" value="0" min="0" max="2000" style="width: 130px"/> <!-- TODO: МАКСИМУМ = ОСТАТОК СРЕДСТВ НА РУКАХ. -->
+        </div>
     </div>
 </div>
 
