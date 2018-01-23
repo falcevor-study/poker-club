@@ -32,6 +32,10 @@ function connect() {
                 if (state.tableCard1 != null && state.tableCard2 != null && state.tableCard3 != null && state.tableCard4 != null && state.tableCard5 != null) {
                     river(state, responce.chairs)
                 }
+                if (state.currentTrader.id == parseInt($('#user_id').text())) {
+                    console.log('ВАШ ХОД');
+                    prepare_for_action(state, responce.chairs);
+                }
             }
         });
     });
@@ -118,23 +122,6 @@ function getChairs() {
     }  , 1000 );
 }
 
-/**
- * Отправить на сервер действие пользователя на торгах.
- * Данные вытягиваются из формы и из hidden-полей.
- */
-function sendAction(action) {
-    var json = JSON.stringify(
-        {
-            'table_id': $('#table_id').text(),
-            'user_id': $('#user_id').text(),
-            'action': action,
-            'value': document.getElementById('value').value
-        }
-    );
-    stompClient.send("/app/game/action", {}, json);
-    // disable_buttons(); TODO: УБРАТЬ КОММЕНТАРИЙ
-}
-
 
 /**
  * Обновить визуализацию карт.
@@ -215,15 +202,80 @@ function update_bets(state, chairs) {
     }
 }
 
+/**
+ * Отправить на сервер действие пользователя на торгах.
+ * Данные вытягиваются из формы и из hidden-полей.
+ */
+function sendAction(action) {
+    var json = JSON.stringify(
+        {
+            'table_id': $('#table_id').text(),
+            'user_id': $('#user_id').text(),
+            'action': action,
+            'value': document.getElementById('value').value
+        }
+    );
+    stompClient.send("/app/game/action", {}, json);
+    disable_buttons();
+}
+
+/**
+ * Подготовить интерфейс пользователя к торгам.
+ *
+ * @param state - структура текущего состояния.
+ * @param chairs - массив структур стульев.
+ */
+function prepare_for_action(state, chairs) {
+    var maxBet = 0;
+    var userBet = 0;
+    var userPot = 0;
+    var minUserBet = 0;
+    var chairCount = 1;
+    for (var key in chairs){
+        if (chairs[key].bet > maxBet) { maxBet = chairs[key].bet; }
+
+        if (parseInt($('#user_id').text()) == chairs[key].user.id) {
+            userBet = chairs[key].bet;
+            userPot = chairs[key].userPot;
+        }
+
+        chairCount += 1;
+    }
+
+    if (userBet == maxBet) {
+        minUserBet = state.game.table.minBet;
+    } else {
+        minUserBet = maxBet - userBet;
+    }
+
+    if (minUserBet > userPot) {
+        minUserBet = userPot;
+    }
+
+    document.getElementById('value').value = minUserBet;
+    $('#value').attr('min', minUserBet);
+    $('#value').attr('map', userPot);
+
+    document.getElementById("fold").disabled = false;
+
+    if (userBet == maxBet) {
+        document.getElementById("check").disabled = false;
+        document.getElementById("bet").disabled = false;
+    } else {
+        document.getElementById("call").disabled = false;
+        document.getElementById("raise").disabled = false;
+    }
+}
 
 /**
  * Выключить все кнопки интерфейса, сбросить величину ставки.
  */
 function disable_buttons() {
-    $('#check').disable();
-    $('#call').disable();
-    $('#bet').disable();
-    $('#raise').disable();
-    $('#fold').disable();
+    document.getElementById("check").disabled = true;
+    document.getElementById("call").disabled = true;
+    document.getElementById("bet").disabled = true;
+    document.getElementById("raise").disabled = true;
+    document.getElementById("fold").disabled = true;
     document.getElementById('value').value = "0";
+    $('#value').attr('min', 0);
 }

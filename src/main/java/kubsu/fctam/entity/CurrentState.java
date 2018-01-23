@@ -19,6 +19,14 @@ public class CurrentState {
     private int pot;
 
     @ManyToOne
+    @JoinColumn(name = "currentDealerId")
+    private User currentDealer;
+
+    @ManyToOne
+    @JoinColumn(name = "currentTraderId")
+    private User currentTrader;
+
+    @ManyToOne
     @JoinColumn(name = "tableCard1Id")
     private Card tableCard1;
 
@@ -59,6 +67,8 @@ public class CurrentState {
     public Card getTableCard3() { return tableCard3; }
     public Card getTableCard4() { return tableCard4; }
     public Card getTableCard5() { return tableCard5; }
+    public User getCurrentDealer() { return currentDealer; }
+    public User getCurrentTrader() { return currentTrader; }
 
     public void setGame(Game game) { this.game = game; }
     public void setPot(int pot) { this.pot = pot; }
@@ -67,4 +77,6 @@ public class CurrentState {
     public void setTableCard3(Card tableCard3) { this.tableCard3 = tableCard3; }
     public void setTableCard4(Card tableCard4) { this.tableCard4 = tableCard4; }
     public void setTableCard5(Card tableCard5) { this.tableCard5 = tableCard5; }
+    public void setCurrentDealer(User dealer) { this.currentDealer = dealer; }
+    public void setCurrentTrader(User trader) { this.currentTrader = trader; }
 }

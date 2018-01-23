@@ -115,11 +115,11 @@
         <a th:onclick="'disconnect();'" th:href="@{/tables}">Выйти из игры</a>
 
         <div class="action">
-            <button id="check" onclick="sendAction('check');">Check</button>
-            <button id="call" onclick="sendAction('call');">Call</button>
-            <button id="fold" onclick="sendAction('fold');">Fold</button>
-            <button id="raise" onclick="sendAction('raise');">Raise</button>
-            <button id="bet" onclick="sendAction('bet');">Bet</button>
+            <button id="check" onclick="sendAction('check');" disabled="disabled">Check</button>
+            <button id="call" onclick="sendAction('call');" disabled="disabled">Call</button>
+            <button id="fold" onclick="sendAction('fold');" disabled="disabled">Fold</button>
+            <button id="raise" onclick="sendAction('raise');" disabled="disabled">Raise</button>
+            <button id="bet" onclick="sendAction('bet');" disabled="disabled">Bet</button>
             <input id="value" type="number" value="0" min="0" max="2000" style="width: 130px"/> <!-- TODO: МАКСИМУМ = ОСТАТОК СРЕДСТВ НА РУКАХ. -->
         </div>
     </div>

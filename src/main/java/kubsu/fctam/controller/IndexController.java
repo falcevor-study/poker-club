@@ -151,10 +151,6 @@ public class IndexController {
             gameService.save(newGame);
             outputMap.put("isNewGame", false);
 
-            CurrentState state = new CurrentState(null, 0, null, null, null, null, null);
-            newGame.setState(state);
-            stateService.save(state);
-            outputMap.put("currentGameState", state);
 
             int[] randomCards = randomWithoutDuplicates(table.chairsCount()*2, null);
             int card_number = 0;
@@ -166,6 +162,16 @@ public class IndexController {
                 chairService.save(chair);
             }
             outputMap.put("chairs", table.getChairs());
+
+            CurrentState state = new CurrentState(null, 0, null, null, null, null, null);
+            List<Chair> chairs = chairService.getAll(table.getId());
+            state.setCurrentDealer(chairs.get(0).getUser());
+            chairs.get(0).setBet(table.getMinBet() / 2);
+            chairService.save(chairs.get(0));
+            state.setCurrentTrader(chairs.get(1).getUser());
+            newGame.setState(state);
+            stateService.save(state);
+            outputMap.put("currentGameState", state);
 
             return outputMap;
         }
@@ -199,7 +205,8 @@ public class IndexController {
      * @param action - набор параметров действия (пользователь, стол, тип действия, величина ставки)
      */
     @MessageMapping("/game/action")
-    public void getAction(HashMap action) {
+    @SendTo("/topic/startgame/in")
+    public HashMap<String, Object> getAction(HashMap action) {
         int table_id = Integer.parseInt(action.get("table_id").toString());
         int user_id = Integer.parseInt(action.get("table_id").toString());
 
@@ -207,10 +214,42 @@ public class IndexController {
         String actionType = action.get("action").toString();
         User user = userService.get(user_id);
         Table table = tableService.get(table_id);
+        Game currentGame = tableService.getCurrentGame(table);
+        CurrentState currentState = currentGame.getState();
+        List<Chair> chairs = chairService.getAll(table.getId());
+        Chair currentChair = chairService.getChair(table.getId(), user.getId());
 
-        HashMap<String, Object> parameters = new HashMap<>();
-        parameters.put("currentUser", user.getId());
-        simpMessagingTemplate.convertAndSend("/topic/game/state/" + table.getName(), parameters);
+        if (actionType.equals("bet")) {
+            currentChair.setBet(value);
+        }
+        else if (actionType.equals("call") || actionType.equals("raise")) {
+            currentChair.setBet(currentChair.getBet() + value);
+        }
+        else if (actionType.equals("fold")) {
+            currentChair.setStatus("watcher");
+        }
+        chairService.save(currentChair);
+
+        // Если торги закончились (у все равные bet), то
+        // return nextTermination(table);
+
+        int currInd;
+        for (currInd = 0; currInd < chairs.size(); ++currInd) {
+            if (chairs.get(currInd).getUser().getId() == currentState.getCurrentTrader().getId()) {
+                break;
+            }
+        }
+
+        currInd++;
+
+        currentState.setCurrentTrader(chairs.get(currInd % chairs.size()).getUser());
+        stateService.save(currentState);
+
+        HashMap<String, Object> outputMap = new HashMap<>();
+        outputMap.put("isNewGame", false);
+        outputMap.put("currentGameState", currentState);
+        outputMap.put("chairs", table.getChairs());
+        return outputMap;
     }
 
 
@@ -221,6 +260,7 @@ public class IndexController {
      */
     public HashMap<String, Object> nextTermination(Table table) {
         Game currentGame = tableService.getCurrentGame(table);
+        CurrentState currentState = currentGame.getState();
         HashSet<Integer> exclude = new HashSet<>();
         CurrentState state = currentGame.getState();
         for (Chair chair : table.getChairs()) {
@@ -250,6 +290,9 @@ public class IndexController {
         } else {
             return null;
         }
+
+        List<Chair> chairs = chairService.getAll(table.getId());
+
         stateService.save(state);
         HashMap<String, Object> outputMap = new HashMap<>();
         outputMap.put("currentGameState", state);

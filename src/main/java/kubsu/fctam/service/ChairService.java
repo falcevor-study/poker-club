@@ -5,8 +5,10 @@ import kubsu.fctam.entity.Chair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -29,4 +31,14 @@ public class ChairService {
                 .filter(chair -> chair.getTable().getId() == table_id && chair.getUser().getId() == user_id)
                 .findFirst().orElse(null);
     }
+
+    public List<Chair> getAll(int table_id){
+        return StreamSupport
+                .stream(Spliterators.spliteratorUnknownSize(chairRepository.findAll().iterator(), Spliterator.NONNULL),
+                        false)
+                .filter(chair -> chair.getTable().getId() == table_id && chair.getStatus().equals("player") )
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
 }
