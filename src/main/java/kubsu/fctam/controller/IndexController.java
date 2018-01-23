@@ -3,7 +3,9 @@ package kubsu.fctam.controller;
 import kubsu.fctam.entity.*;
 import kubsu.fctam.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +36,9 @@ public class IndexController {
 
     @Autowired
     ResultService resultService;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @RequestMapping(value = "index")
     public String getIndex(Model model) {
@@ -71,13 +76,13 @@ public class IndexController {
 
 
     /**
-     * метод удаляет стул юзера при выходе из игры
+     * Обработка события выхода игрока из-за стола.
+     * Ответ летит в поток обновления визуализации.
      * @param map - тут содержится table_id и user_id
-     * @return - какой-то объект, иначе сокеты не работают, мда
      */
     @SubscribeMapping("/disconnect/out")
-    @SendTo("/topic/disconnect/in")
-    public List<Table> disconnect(HashMap map) {
+    @SendTo("/topic/startgame/in")
+    public HashMap<String, Object> disconnect(HashMap map) {
         int tableId = Integer.parseInt((String) map.get("table_id"));
         int userId = Integer.parseInt((String) map.get("user_id"));
         Chair chair = chairService.getChair(tableId, userId);
@@ -86,20 +91,27 @@ public class IndexController {
         Table table = tableService.get(tableId);
         Game currentGame = tableService.getCurrentGame(table);
 
+        // Если он вышел в процессе торгов, пересмотерть состояние игры.
         if (currentGame != null) {
+            // Если остался последний игрок, значит он срывает куш.
             if (table.getChairs().size() == 1) {
                 Chair winChair = table.getChairs().get(0);
                 User user = winChair.getUser();
-                CurrentState currentState = stateService.getStateByGame(currentGame);
+                CurrentState currentState = currentGame.getState();
                 Result result = new Result(user, currentGame, chair.getBet(), currentState.getPot());
                 resultService.save(result);
             }
+            // Если вышел предпоследний или последний игрок, игра заканчивается.
             if (table.getChairs().size() <= 1) {
                 currentGame.setEndDtm(new Date());
                 gameService.save(currentGame);
             }
         }
-        return tableService.getAll(); // надо передавать какой-то объект, а то сокеты не хотят без объекта коннектиться
+        HashMap<String, Object> outputMap = new HashMap<>();
+        outputMap.put("isNewGame", false);
+        outputMap.put("currentGameState", currentGame.getState());
+        outputMap.put("chairs", table.getChairs());
+        return outputMap;
     }
 
 
@@ -175,46 +187,77 @@ public class IndexController {
 
         // Иначе отдаем текущее состояние игры.
         outputMap.put("isNewGame", false);
-        outputMap.put("currentGameState", stateService.getStateByGame(currentGame));
+        outputMap.put("currentGameState", currentGame.getState());
         outputMap.put("chairs", table.getChairs());
         return outputMap;
-
-            // Блок перехода на следующий этап торгов, он должен быть не тут.
-//            if (currentGame != null && table.chairsCount() > 1) {
-//                CurrentState state = currentGame.getState();
-//                HashSet<Integer> exclude = new HashSet<>();
-//                for (Chair chair : table.getChairs()) {
-//                    exclude.add(chair.getCard1().getId());
-//                    exclude.add(chair.getCard2().getId());
-//                }
-//                if (amountOfTableCards(state) == 0) {
-//                    int[] randomCards = randomWithoutDuplicates(3, exclude);
-//                    state.setTableCard1(cardService.get(randomCards[0]));
-//                    state.setTableCard2(cardService.get(randomCards[1]));
-//                    state.setTableCard3(cardService.get(randomCards[2]));
-//                }
-//                if (amountOfTableCards(state) == 3) {
-//                    exclude.add(state.getTableCard1().getId());
-//                    exclude.add(state.getTableCard2().getId());
-//                    exclude.add(state.getTableCard3().getId());
-//                    int[] randomCards = randomWithoutDuplicates(1, exclude);
-//                    state.setTableCard4(cardService.get(randomCards[0]));
-//                }
-//                if (amountOfTableCards(state) == 4) {
-//                    exclude.add(state.getTableCard1().getId());
-//                    exclude.add(state.getTableCard2().getId());
-//                    exclude.add(state.getTableCard3().getId());
-//                    exclude.add(state.getTableCard4().getId());
-//                    int[] randomCards = randomWithoutDuplicates(1, exclude);
-//                    state.setTableCard5(cardService.get(randomCards[0]));
-//                }
-//                stateService.save(state);
-//                outputMap.put("currentGameState", state);
-//                outputMap.put("chairs", table.getChairs());
-//                outputMap.put("isNewGame", false);
-//                return outputMap;
-//            }
     }
+
+
+    /**
+     * Обработка сообщения о действии пользователя в торгах.
+     *
+     * @param action - набор параметров действия (пользователь, стол, тип действия, величина ставки)
+     */
+    @MessageMapping("/game/action")
+    public void getAction(HashMap action) {
+        int table_id = Integer.parseInt(action.get("table_id").toString());
+        int user_id = Integer.parseInt(action.get("table_id").toString());
+
+        int value = Integer.parseInt(action.get("value").toString());
+        String actionType = action.get("action").toString();
+        User user = userService.get(user_id);
+        Table table = tableService.get(table_id);
+
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("currentUser", user.getId());
+        simpMessagingTemplate.convertAndSend("/topic/game/state/" + table.getName(), parameters);
+    }
+
+
+    /**
+     * Произвести следующую раздачу. Вызывается при окончании очередных торгов.
+     * @param  table - стол, на котором необходимо раздать карты.
+     * @return структура, представляющая новое состояние игры. null, если игра закончена.
+     */
+    public HashMap<String, Object> nextTermination(Table table) {
+        Game currentGame = tableService.getCurrentGame(table);
+        HashSet<Integer> exclude = new HashSet<>();
+        CurrentState state = currentGame.getState();
+        for (Chair chair : table.getChairs()) {
+            exclude.add(chair.getCard1().getId());
+            exclude.add(chair.getCard2().getId());
+        }
+        if (amountOfTableCards(state) == 0) {
+            int[] randomCards = randomWithoutDuplicates(3, exclude);
+            state.setTableCard1(cardService.get(randomCards[0]));
+            state.setTableCard2(cardService.get(randomCards[1]));
+            state.setTableCard3(cardService.get(randomCards[2]));
+        }
+        if (amountOfTableCards(state) == 3) {
+            exclude.add(state.getTableCard1().getId());
+            exclude.add(state.getTableCard2().getId());
+            exclude.add(state.getTableCard3().getId());
+            int[] randomCards = randomWithoutDuplicates(1, exclude);
+            state.setTableCard4(cardService.get(randomCards[0]));
+        }
+        if (amountOfTableCards(state) == 4) {
+            exclude.add(state.getTableCard1().getId());
+            exclude.add(state.getTableCard2().getId());
+            exclude.add(state.getTableCard3().getId());
+            exclude.add(state.getTableCard4().getId());
+            int[] randomCards = randomWithoutDuplicates(1, exclude);
+            state.setTableCard5(cardService.get(randomCards[0]));
+        } else {
+            return null;
+        }
+        stateService.save(state);
+        HashMap<String, Object> outputMap = new HashMap<>();
+        outputMap.put("currentGameState", state);
+        outputMap.put("chairs", table.getChairs());
+        outputMap.put("isNewGame", false);
+        return outputMap;
+    }
+
 
 
     /**

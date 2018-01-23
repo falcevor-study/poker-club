@@ -7,27 +7,11 @@ function connect() {
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function(frame) {
         console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/game/state/' + $('#table_name').text(), function(message){
-            update_state(JSON.parse(message.body));
-            card_update_request();
-            console.log(JSON.parse(message.body));
-        });
-
-        stompClient.subscribe('/topic/game/card/' + $('#login').text(), function(message){
-            update_cards(JSON.parse(message.body));
-            console.log(JSON.parse(message.body));
-        });
 
         // это запускается автоматически при открытии страницы с игрой пользователем
         stompClient.subscribe('/topic/chairs/in', function(message){
             var chairs = JSON.parse(message.body);
-            console.log(chairs);
             placeUsers(chairs);
-        });
-
-        // это запускается при выходе из игры
-        stompClient.subscribe('/topic/disconnect/in', function(message){
-            console.log(JSON.parse(message.body));
         });
 
         // это запускается в том случае, если стульев за столом больше 1
@@ -66,13 +50,13 @@ function disconnect() {
 
 
 function river(currentGameState, chairs) {
-    console.log('river')
+    console.log('river');
     update_cards(currentGameState, chairs);
 }
 
 
 function tern(currentGameState, chairs) {
-    console.log('tern')
+    console.log('tern');
     update_cards(currentGameState, chairs);
 }
 
@@ -149,21 +133,6 @@ function sendAction(action) {
 
 
 /**
- * Отправить на сервер запрос от пользователя на обновление визуализации карт.
- * Данные вытягиваются из формы и из hidden-полей.
- */
-function card_update_request(action) {
-    var json = JSON.stringify(
-        {
-            'table_id': $('#table_id').text(),
-            'user_id': $('#user_id').text()
-        }
-    );
-    stompClient.send("/app/game/card", {}, json);
-}
-
-
-/**
  * Обновить визуализацию карт.
  */
 function update_cards(state, chairs) {
@@ -221,17 +190,6 @@ function update_cards(state, chairs) {
         $(old_card2_class).attr('class', new_card2_class);
         chairCount += 1;
     }
-}
-
-
-/**
- * Обновить состояние отображения игры и функциональных элементов.
- *
- * @param state - полученное от сервера состояние игры.
- */
-function update_state(state) {
-    // TODO: Когда будет готов ответ от сервера, реализовать. Не забыть про включение определенных кнопок. То есть,
-    // TODO: например, если есть ставка, ее нужно повысить, принять или сбросить карты, а просто пропустить (check) нельзя.
 }
 
 
