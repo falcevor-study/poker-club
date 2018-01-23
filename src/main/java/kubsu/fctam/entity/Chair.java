@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import java.util.Date;
 
 @Entity(name = "tChair")
 public class Chair implements Comparable<Chair> {
@@ -44,16 +45,21 @@ public class Chair implements Comparable<Chair> {
     @JoinColumn(name = "card2Id")
     private Card card2;
 
+    @Column
+    private Date connectionDate;
+
+
 
     public Chair() {}
 
-    public Chair(User user, Table table, int number, String status, int bet, int userPot, Card card1, Card card2) {
+    public Chair(User user, Table table, int number, String status, int bet, int userPot, Date connectionDate, Card card1, Card card2) {
         this.user = user;
         this.table = table;
         this.number = number;
         this.status = status;
         this.bet = bet;
         this.userPot = userPot;
+        this.connectionDate = connectionDate;
         this.card1 = card1;
         this.card2 = card2;
     }
@@ -66,6 +72,7 @@ public class Chair implements Comparable<Chair> {
     public void setUserPot(int userPot) { this.userPot = userPot; }
     public void setCard1(Card card1) { this.card1 = card1; }
     public void setCard2(Card card2) { this.card2 = card2; }
+    public void setConnectionDate(Date connectionDate) { this.connectionDate = connectionDate; }
 
     public int getId() { return id; }
     public User getUser() { return user; }
@@ -76,6 +83,7 @@ public class Chair implements Comparable<Chair> {
     public int getUserPot() { return userPot; }
     public Card getCard1() { return card1; }
     public Card getCard2() { return card2; }
+    public Date getConnectionDate() { return connectionDate; }
 
     @Override
     public boolean equals(Object another) {

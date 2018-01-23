@@ -87,20 +87,28 @@ function preflop(currentGameState, chairs) {
  */
 function placeUsers(chairs) {
     var chairCount = 1;
+    var currentChair = null;
     for (var key in chairs){
         var h4_id = '#player'+chairCount+'_name';
         var h5_pot = '#player'+chairCount+'_pot';
         $(h4_id).text(chairs[key].user.login);
         $(h5_pot).text(chairs[key].userPot);
         chairCount += 1;
+        if (parseInt($('#user_id').text()) === chairs[key].user.id) {
+            currentChair = chairs[key]
+        }
     }
     if (chairCount >= 2) {
-        startGame(chairs);
+        startGame(chairs, currentChair);
     }
 }
 
 
-function startGame(chairs) {
+function startGame(chairs, currentChair) {
+    for (var key in chairs) {
+        if (currentChair.connectionDate < chairs[key].connectionDate)
+            return;
+    }
     var json = JSON.stringify(
         {
             'chairs': chairs,
