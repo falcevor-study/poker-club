@@ -378,7 +378,7 @@ public class IndexController {
                 }
             }
             else {
-                while (used.contains(add) && exclude.contains(add)) {
+                while (used.contains(add) || exclude.contains(add)) {
                     add = random.nextInt(52) + 3;
                 }
             }
