@@ -48,11 +48,14 @@ public class Chair implements Comparable<Chair> {
     @Column
     private Date connectionDate;
 
+    @Column
+    private Boolean isChecked;
+
 
 
     public Chair() {}
 
-    public Chair(User user, Table table, int number, String status, int bet, int userPot, Date connectionDate, Card card1, Card card2) {
+    public Chair(User user, Table table, int number, String status, int bet, int userPot, Date connectionDate, Card card1, Card card2, Boolean isChecked) {
         this.user = user;
         this.table = table;
         this.number = number;
@@ -62,6 +65,7 @@ public class Chair implements Comparable<Chair> {
         this.connectionDate = connectionDate;
         this.card1 = card1;
         this.card2 = card2;
+        this.isChecked = isChecked;
     }
 
     public void setUser(User user) { this.user = user; }
@@ -73,6 +77,7 @@ public class Chair implements Comparable<Chair> {
     public void setCard1(Card card1) { this.card1 = card1; }
     public void setCard2(Card card2) { this.card2 = card2; }
     public void setConnectionDate(Date connectionDate) { this.connectionDate = connectionDate; }
+    public void setIsChecked(Boolean isChecked) { this.isChecked = isChecked; }
 
     public int getId() { return id; }
     public User getUser() { return user; }
@@ -84,6 +89,7 @@ public class Chair implements Comparable<Chair> {
     public Card getCard1() { return card1; }
     public Card getCard2() { return card2; }
     public Date getConnectionDate() { return connectionDate; }
+    public Boolean getIsChecked() { return isChecked; }
 
     @Override
     public boolean equals(Object another) {

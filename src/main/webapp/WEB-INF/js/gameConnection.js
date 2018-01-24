@@ -2,7 +2,7 @@ var stompClient = null;
 //window.addEventListener("beforeunload", disconnect);
 
 function connect() {
-    // disable_buttons(); TODO: УБРАТЬ КОММЕНТАРИЙ
+    disable_buttons();
     var socket = new SockJS('/tables/games/socket');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function(frame) {
@@ -55,29 +55,32 @@ function disconnect() {
 
 function river(currentGameState, chairs) {
     console.log('river');
-    update_cards(currentGameState, chairs);
-    update_bets(currentGameState, chairs);
+    update_view(currentGameState, chairs);
 }
 
 
 function tern(currentGameState, chairs) {
     console.log('tern');
-    update_cards(currentGameState, chairs);
-    update_bets(currentGameState, chairs);
+    update_view(currentGameState, chairs);
 }
 
 
 function flop(currentGameState, chairs) {
     console.log('flop');
-    update_cards(currentGameState, chairs);
-    update_bets(currentGameState, chairs);
+    update_view(currentGameState, chairs);
 }
 
 
 function preflop(currentGameState, chairs) {
     console.log('preflop');
+    update_view(currentGameState, chairs);
+}
+
+
+function update_view(currentGameState, chairs) {
     update_cards(currentGameState, chairs);
     update_bets(currentGameState, chairs);
+    update_user_pots(chairs);
 }
 
 
@@ -200,8 +203,7 @@ function update_bets(state, chairs) {
         var bet = null;
         if (chairs[key].status == "player") {
             bet = chairs[key].bet;
-        }
-        else {
+        } else {
             bet = '';
         }
         var bet_id = '#bet_'+chairCount;
@@ -209,6 +211,24 @@ function update_bets(state, chairs) {
         chairCount += 1;
     }
 }
+
+
+function update_user_pots(chairs) {
+    var chairCount = 1;
+    for (var key in chairs){
+        var userPot = null;
+        if (chairs[key].status == "player") {
+            console.log(chairs[key].userPot);
+            userPot = chairs[key].userPot;
+        } else {
+            userPot = '';
+        }
+        var userPot_id = '#player'+chairCount+"_pot";
+        $(userPot_id).text(userPot);
+        chairCount += 1;
+    }
+}
+
 
 /**
  * Отправить на сервер действие пользователя на торгах.
@@ -226,6 +246,7 @@ function sendAction(action) {
     stompClient.send("/app/game/action", {}, json);
     disable_buttons();
 }
+
 
 /**
  * Подготовить интерфейс пользователя к торгам.
@@ -274,6 +295,7 @@ function prepare_for_action(state, chairs) {
         document.getElementById("raise").disabled = false;
     }
 }
+
 
 /**
  * Выключить все кнопки интерфейса, сбросить величину ставки.

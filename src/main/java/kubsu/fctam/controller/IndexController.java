@@ -66,7 +66,8 @@ public class IndexController {
                     Integer.parseInt((String) map.get("userPot")),
                     new Date(),
                     null,
-                    null);
+                    null,
+                    false);
             table.addChair(chair);
             chairService.save(chair);
             return chair;
@@ -130,9 +131,9 @@ public class IndexController {
 
 
     /**
-     * метод, который раздает карты на всех моментах игры (и в начале, и в конце)
+     * метод, который создает новую игру и раздает карты игрокам
      * @param map - то, что пришло от клиента
-     *            используется пока что только table_id, в дальнейшем надо будет юзать и chair (для реализации ставок)
+     *            используется пока что только table_id
      * @return - isNewGame - булева переменная, показывает, что игра еще не началась
      *           currentGameState - текущее состояние игры (эклемпляр объекта CurrentState)
      *           chairs - список стульев около стола
@@ -144,7 +145,6 @@ public class IndexController {
         Game currentGame = tableService.getCurrentGame(table);
         HashMap<String, Object> outputMap = new HashMap<>();
 
-
         // почему-то при запросе с двух клиентов прога проходит по этой ветке несколько раз
         // то есть, в первый раз прога не распознает, что игра уже создана
         if (currentGame == null && table.chairsCount() > 1) {
@@ -153,7 +153,6 @@ public class IndexController {
             table.addGame(newGame);
             gameService.save(newGame);
             outputMap.put("isNewGame", false);
-
 
             int[] randomCards = randomWithoutDuplicates(table.chairsCount()*2, null);
             int card_number = 0;
@@ -171,6 +170,8 @@ public class IndexController {
 
             CurrentState state = new CurrentState(null, 0, null, null, null, null, null);
             List<Chair> chairs = chairService.getAll(table.getId());
+            chairs.get(0).setBet(table.getMinBet() / 2);
+            chairService.save(chairs.get(0));
             state.setCurrentDealer(chairs.get(0).getUser());
             state.setCurrentTrader(chairs.get(1).getUser());
             newGame.setState(state);
@@ -212,41 +213,67 @@ public class IndexController {
     @SendTo("/topic/startgame/in")
     public HashMap<String, Object> getAction(HashMap action) {
         int table_id = Integer.parseInt(action.get("table_id").toString());
-        int user_id = Integer.parseInt(action.get("table_id").toString());
+        int user_id = Integer.parseInt(action.get("user_id").toString());
+
+        Table table = tableService.get(table_id);
 
         int value = Integer.parseInt(action.get("value").toString());
         String actionType = action.get("action").toString();
-        User user = userService.get(user_id);
-        Table table = tableService.get(table_id);
         Game currentGame = tableService.getCurrentGame(table);
         CurrentState currentState = currentGame.getState();
-        List<Chair> chairs = chairService.getAll(table.getId());
-        Chair currentChair = chairService.getChair(table.getId(), user.getId());
+        List<Chair> chairs = table.getChairs();
+        Chair currentChair = chairs.stream()
+                                            .filter(chair -> chair.getUser().getId() == user_id)
+                                            .findFirst().orElse(null);
 
-        if (actionType.equals("bet")) {
-            currentChair.setBet(value);
-        }
-        else if (actionType.equals("call") || actionType.equals("raise")) {
-            currentChair.setBet(currentChair.getBet() + value);
-        }
-        else if (actionType.equals("fold")) {
-            currentChair.setStatus("watcher");
-        }
-        chairService.save(currentChair);
+        if (currentChair == null)
+            return null;
 
-        // Если торги закончились (у все равные bet), то
-        // return nextTermination(table);
-
-        int currInd;
-        for (currInd = 0; currInd < chairs.size(); ++currInd) {
-            if (chairs.get(currInd).getUser().getId() == currentState.getCurrentTrader().getId()) {
+        switch (actionType) {
+            case "check":
                 break;
+            case "bet":
+                currentChair.setBet(value);
+                currentChair.setUserPot(currentChair.getUserPot() - value);
+                break;
+            case "call":
+            case "raise":
+                currentChair.setBet(currentChair.getBet() + value);
+                currentChair.setUserPot(currentChair.getUserPot() - value);
+                break;
+            case "fold":
+                currentChair.setStatus("watcher");
+                break;
+            default:
+                System.out.println("Haven't such action: " + actionType);
+                return null;
+        }
+
+        currentChair.setIsChecked(true);
+        chairService.save(currentChair);
+        if (table.amountOfActivePlayers() < 2)
+            return finishGame(table);
+
+        boolean tradeEnd = true;
+        int bet = chairs.get(0).getBet();
+        for (Chair chair : chairs) {
+            tradeEnd &= chair.getBet() == bet && chair.getIsChecked();
+        }
+
+        if (tradeEnd) {
+            HashMap<String, Object> request = nextTermination(table);
+            if (request != null) {
+                for (Chair chair : chairs){
+                    chair.setIsChecked(false);
+                    chairService.save(chair);
+                }
+                return request;
+            } else {
+                return finishGame(table);
             }
         }
 
-        currInd++;
-
-        currentState.setCurrentTrader(chairs.get(currInd % chairs.size()).getUser());
+        currentState.setCurrentTrader(chairs.get(currentChair.getNumber() % chairs.size()).getUser());
         stateService.save(currentState);
 
         HashMap<String, Object> outputMap = new HashMap<>();
@@ -256,111 +283,28 @@ public class IndexController {
         return outputMap;
     }
 
-    // TODO новый метод getAction, который работает неправильно
-//    public HashMap<String, Object> getAction(HashMap action) {
-//        int table_id = Integer.parseInt(action.get("table_id").toString());
-//        int user_id = Integer.parseInt(action.get("user_id").toString());
-//
-//        int value = Integer.parseInt(action.get("value").toString());
-//        String actionType = action.get("action").toString();
-//        User user = userService.get(user_id);
-//        Table table = tableService.get(table_id);
-//        Game currentGame = tableService.getCurrentGame(table);
-//        CurrentState currentState = currentGame.getState();
-//        Chair currentChair = chairService.getChair(table.getId(), user.getId());
-//
-//        if (actionType.equals("bet")) {
-//            currentChair.setBet(value);
-//            currentChair.setUserPot(currentChair.getUserPot() - value);
-//        }
-//        else if (actionType.equals("call") || actionType.equals("raise")) {
-//            currentChair.setBet(currentChair.getBet() + value);
-//            currentChair.setUserPot(currentChair.getUserPot() - value);
-//        }
-//        else if (actionType.equals("fold")) {
-//            currentChair.setStatus("watcher");
-//        }
-//        chairService.save(currentChair);
-//
-//        // TODO: Сохраняемые здесь значения нифига не сохраняются.
-//
-//        List<Chair> chairs = chairService.getAll(table.getId()); // TODO: Перетащил это ниже, должно помочь. Не проверял.
-//        boolean tradeEnd = true;
-//        int bet = chairs.get(0).getBet();
-//        for (int i = 0; i < chairs.size(); ++i) {
-//            // TODO: Вот здесь старые значения. Почему так, хз. Возможно из-за того, что лист сформирован из другиъ объектов.
-//            tradeEnd &= chairs.get(i).getBet() == bet && bet > 0;
-//        }
-//
-//        if (tradeEnd) {
-//            HashMap<String, Object> request = nextTermination(table);
-//            if (request != null) {
-//                return request;
-//            } else {
-//                return finishGame(table);
-//            }
-//        }
-//
-//        int currInd;
-//        for (currInd = 0; currInd < chairs.size(); ++currInd) {
-//            if (chairs.get(currInd).getUser().getId() == currentState.getCurrentTrader().getId()) {
-//                break;
-//            }
-//        }
-//
-//        currInd++;
-//
-//        currentState.setCurrentTrader(chairs.get(currInd % chairs.size()).getUser());
-//        stateService.save(currentState);
-//
-//        HashMap<String, Object> outputMap = new HashMap<>();
-//        outputMap.put("isNewGame", false);
-//        outputMap.put("currentGameState", currentState);
-//        outputMap.put("chairs", table.getChairs());
-//        return outputMap;
-//    }
 
-//    public HashMap<String, Object> finishGame(Table table) {
-//        Game currentGame = tableService.getCurrentGame(table);
-//        CurrentState currentState = currentGame.getState();
-//        currentGame.setEndDtm(new Date());
-//
-//
-//        Chair winner = chairService.getAll(table.getId()).get(0); // TODO: Как-то находить победителя.
-//
-//
-//        winner.setUserPot(winner.getUserPot() + currentState.getPot());
-//
-//        HashMap<String, Object> outputMap = new HashMap<>();
-//        Game newGame = new Game(null, null, null);
-//        table.addGame(newGame);
-//        gameService.save(newGame);
-//        outputMap.put("isNewGame", false);
-//
-//
-//        int[] randomCards = randomWithoutDuplicates(table.chairsCount()*2, null);
-//        int card_number = 0;
-//        for (Chair chair : table.getChairs()) {
-//            chair.setStatus("player");
-//            chair.setCard1(cardService.get(randomCards[card_number]));
-//            chair.setCard2(cardService.get(randomCards[card_number+1]));
-//            card_number += 2;
-//            chairService.save(chair);
-//        }
-//        outputMap.put("chairs", table.getChairs());
-//
-//        CurrentState state = new CurrentState(null, 0, null, null, null, null, null);
-//        List<Chair> chairs = chairService.getAll(table.getId());
-//        state.setCurrentDealer(chairs.get(0).getUser());
-//        chairs.get(0).setBet(table.getMinBet() / 2);
-//        chairService.save(chairs.get(0));
-//        state.setCurrentTrader(chairs.get(1).getUser());
-//        newGame.setState(state);
-//        stateService.save(state);
-//        outputMap.put("currentGameState", state);
-//
-//        return outputMap;
-//    }
+    /**
+     * метод, который заканчивает игру (кто бы мог подумать, да?)
+     * @param table - объект стола, на котором надо закончить игру
+     * @return - структуру данных для клиента (список стульев и текущее состояние игры)
+     */
+    public HashMap<String, Object> finishGame(Table table) {
+        Game currentGame = tableService.getCurrentGame(table);
+        CurrentState currentState = currentGame.getState();
+        currentGame.setEndDtm(new Date());
+        gameService.save(currentGame);
+        Chair winner = table.getChairs().get(0); // TODO: Как-то находить победителя.
+        winner.setUserPot(winner.getUserPot() + currentState.getPot());
+        chairService.save(winner);
+
+        // TODO добавить создание сущности result для каждого игрока
+        HashMap<String, Object> tableIdMap = new HashMap<>();
+        tableIdMap.put("table_id", Integer.toString(table.getId()));
+        HashMap<String, Object> outputMap = startGame(tableIdMap);
+        return outputMap;
+    }
+
 
     /**
      * Произвести следующую раздачу. Вызывается при окончании очередных торгов.
@@ -372,38 +316,39 @@ public class IndexController {
         HashSet<Integer> exclude = new HashSet<>();
         CurrentState state = currentGame.getState();
 
-
         for (Chair chair : table.getChairs()) {
-            state.setPot(state.getPot() + chair.getBet());
-            chair.setBet(0);
+            state.setPot(state.getPot() + chair.getBet()); // добавляем ставки игроков в общий банк
+            chair.setBet(0); // обнуляем текущие ставки игроков
+            chairService.save(chair);
             exclude.add(chair.getCard1().getId());
             exclude.add(chair.getCard2().getId());
         }
-        stateService.save(state);
 
         int amount = amountOfTableCards(state);
-        if (amount == 0) {
-            int[] randomCards = randomWithoutDuplicates(3, exclude);
-            state.setTableCard1(cardService.get(randomCards[0]));
-            state.setTableCard2(cardService.get(randomCards[1]));
-            state.setTableCard3(cardService.get(randomCards[2]));
-        }
-        if (amount == 3) {
-            exclude.add(state.getTableCard1().getId());
-            exclude.add(state.getTableCard2().getId());
-            exclude.add(state.getTableCard3().getId());
-            int[] randomCards = randomWithoutDuplicates(1, exclude);
-            state.setTableCard4(cardService.get(randomCards[0]));
-        }
-        if (amount == 4) {
-            exclude.add(state.getTableCard1().getId());
-            exclude.add(state.getTableCard2().getId());
-            exclude.add(state.getTableCard3().getId());
-            exclude.add(state.getTableCard4().getId());
-            int[] randomCards = randomWithoutDuplicates(1, exclude);
-            state.setTableCard5(cardService.get(randomCards[0]));
-        } else {
-            return null;
+        switch (amount) {
+            case 0:
+                int[] randomCards = randomWithoutDuplicates(3, exclude);
+                state.setTableCard1(cardService.get(randomCards[0]));
+                state.setTableCard2(cardService.get(randomCards[1]));
+                state.setTableCard3(cardService.get(randomCards[2]));
+                break;
+            case 3:
+                exclude.add(state.getTableCard1().getId());
+                exclude.add(state.getTableCard2().getId());
+                exclude.add(state.getTableCard3().getId());
+                randomCards = randomWithoutDuplicates(1, exclude);
+                state.setTableCard4(cardService.get(randomCards[0]));
+                break;
+            case 4:
+                exclude.add(state.getTableCard1().getId());
+                exclude.add(state.getTableCard2().getId());
+                exclude.add(state.getTableCard3().getId());
+                exclude.add(state.getTableCard4().getId());
+                randomCards = randomWithoutDuplicates(1, exclude);
+                state.setTableCard5(cardService.get(randomCards[0]));
+                break;
+            default:
+                return null;
         }
 
         stateService.save(state);
@@ -413,7 +358,6 @@ public class IndexController {
         outputMap.put("isNewGame", false);
         return outputMap;
     }
-
 
 
     /**
@@ -427,15 +371,15 @@ public class IndexController {
         Random random = new Random();
         HashSet<Integer> used = new HashSet<Integer>();
         for (int i = 0; i < arr_size; i++) {
-            int add = random.nextInt(52) + 3; //this is the int we are adding
+            int add = random.nextInt(52) + 3;
             if (exclude == null) {
-                while (used.contains(add)) { //while we have already used the number
-                    add = random.nextInt(52) + 3; //generate a new one because it's already used
+                while (used.contains(add)) {
+                    add = random.nextInt(52) + 3;
                 }
             }
             else {
-                while (used.contains(add) && exclude.contains(add)) { //while we have already used the number
-                    add = random.nextInt(52) + 3; //generate a new one because it's already used
+                while (used.contains(add) && exclude.contains(add)) {
+                    add = random.nextInt(52) + 3;
                 }
             }
             used.add(add);
@@ -443,6 +387,7 @@ public class IndexController {
         }
         return result;
     }
+
 
     /**
      * метод для того, чтобы выяснить, сколько карт на столе

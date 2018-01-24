@@ -60,29 +60,33 @@ public class Table implements Comparable<Table> {
         // Если все места за столом заняты, новый стул поставить некуда.
         if (chairs.size() == 5) { return; }
 
-        // если никого нет за столом, то садимся первыми
         if (chairs.size() == 0) {
-            chair.setNumber(0);
-        }
-        // если есть, то садимся на свободное место
-        else {
-            chair.setNumber(chairs.size() + 1);
+            chair.setNumber(1); // если никого нет за столом, то садимся первыми
+        } else {
+            chair.setNumber(chairs.size() + 1); // если есть, то садимся на свободное место
         }
         chair.setTable(this);
         this.chairs.add(chair);
     }
 
-    /**
-     * метод для добавления игры
-     * @param game - игра, которую нужно добавить
-     */
+
     public void addGame(Game game) {
         game.setTable(this);
         this.games.add(game);
     }
 
+
     public int chairsCount() {
         return chairs.size();
+    }
+
+
+    public int amountOfActivePlayers() {
+        int amountOfActivePlayers = 0;
+        for (Chair chair : chairs)
+            if (chair.getStatus().equals("player"))
+                ++amountOfActivePlayers;
+        return amountOfActivePlayers;
     }
 
     @Override
