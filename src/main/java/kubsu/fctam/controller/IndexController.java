@@ -64,6 +64,7 @@ public class IndexController {
                     "watcher",
                     0,
                     Integer.parseInt((String) map.get("userPot")),
+                    Integer.parseInt((String) map.get("userPot")),
                     new Date(),
                     null,
                     null,
@@ -100,7 +101,7 @@ public class IndexController {
                 Chair winChair = table.getChairs().get(0);
                 User user = winChair.getUser();
                 CurrentState currentState = currentGame.getState();
-                Result result = new Result(user, currentGame, chair.getBet(), currentState.getPot());
+                Result result = new Result(user, currentGame, currentState.getPot());
                 resultService.save(result);
             }
             // Если вышел предпоследний или последний игрок, игра заканчивается.
@@ -110,8 +111,14 @@ public class IndexController {
             }
         }
         HashMap<String, Object> outputMap = new HashMap<>();
-        outputMap.put("isNewGame", false);
-        outputMap.put("currentGameState", currentGame.getState());
+        if (currentGame == null) {
+            outputMap.put("isNewGame", true);
+            outputMap.put("currentGameState", null);
+        }
+        else {
+            outputMap.put("isNewGame", false);
+            outputMap.put("currentGameState", currentGame.getState());
+        }
         outputMap.put("chairs", table.getChairs());
         return outputMap;
     }
@@ -285,7 +292,7 @@ public class IndexController {
 
 
     /**
-     * метод, который заканчивает игру (кто бы мог подумать, да?)
+     * метод, который заканчивает игру
      * @param table - объект стола, на котором надо закончить игру
      * @return - структуру данных для клиента (список стульев и текущее состояние игры)
      */
@@ -297,12 +304,14 @@ public class IndexController {
         Chair winner = table.getChairs().get(0); // TODO: Как-то находить победителя.
         winner.setUserPot(winner.getUserPot() + currentState.getPot());
         chairService.save(winner);
+        for (Chair chair : table.getChairs()) {
+            Result result = new Result(chair.getUser(), currentGame, chair.getUserPot()-chair.getStartUserPot());
+            resultService.save(result);
+        }
 
-        // TODO добавить создание сущности result для каждого игрока
         HashMap<String, Object> tableIdMap = new HashMap<>();
         tableIdMap.put("table_id", Integer.toString(table.getId()));
-        HashMap<String, Object> outputMap = startGame(tableIdMap);
-        return outputMap;
+        return startGame(tableIdMap);
     }
 
 

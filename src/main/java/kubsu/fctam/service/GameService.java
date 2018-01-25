@@ -31,11 +31,21 @@ public class GameService {
     }
 
     public void endAll() {
-        repository.findAll().forEach(
-                (game) -> {
+        StreamSupport
+                .stream(Spliterators.spliteratorUnknownSize(repository.findAll().iterator(), Spliterator.NONNULL),
+                        false)
+                .sorted()
+                .filter(game -> game.getEndDtm() == null)
+                .forEach(game -> {
                     game.setEndDtm(new Date());
                     repository.save(game);
-                }
-        );
+                });
+//        repository.findAll()
+//                .forEach(
+//                (game) -> {
+//                    game.setEndDtm(new Date());
+//                    repository.save(game);
+//                }
+//        );
     }
 }

@@ -37,6 +37,9 @@ public class Chair implements Comparable<Chair> {
     @Column
     private int userPot;
 
+    @Column
+    private int startUserPot;
+
     @ManyToOne
     @JoinColumn(name = "card1Id")
     private Card card1;
@@ -55,13 +58,14 @@ public class Chair implements Comparable<Chair> {
 
     public Chair() {}
 
-    public Chair(User user, Table table, int number, String status, int bet, int userPot, Date connectionDate, Card card1, Card card2, Boolean isChecked) {
+    public Chair(User user, Table table, int number, String status, int bet, int userPot, int startUserPot, Date connectionDate, Card card1, Card card2, Boolean isChecked) {
         this.user = user;
         this.table = table;
         this.number = number;
         this.status = status;
         this.bet = bet;
         this.userPot = userPot;
+        this.startUserPot = startUserPot;
         this.connectionDate = connectionDate;
         this.card1 = card1;
         this.card2 = card2;
@@ -74,6 +78,7 @@ public class Chair implements Comparable<Chair> {
     public void setStatus(String status) { this.status = status; }
     public void setBet(int bet) { this.bet = bet; }
     public void setUserPot(int userPot) { this.userPot = userPot; }
+    public void setStartUserPot(int startUserPot) { this.startUserPot = startUserPot; }
     public void setCard1(Card card1) { this.card1 = card1; }
     public void setCard2(Card card2) { this.card2 = card2; }
     public void setConnectionDate(Date connectionDate) { this.connectionDate = connectionDate; }
@@ -86,6 +91,7 @@ public class Chair implements Comparable<Chair> {
     public String getStatus() { return status; }
     public int getBet() { return bet; }
     public int getUserPot() { return userPot; }
+    public int getStartUserPot() { return startUserPot; }
     public Card getCard1() { return card1; }
     public Card getCard2() { return card2; }
     public Date getConnectionDate() { return connectionDate; }

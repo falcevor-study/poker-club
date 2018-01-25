@@ -21,8 +21,8 @@ public class Result implements Comparable<Result>{
     @JoinColumn(name = "gameId")
     private Game game;
 
-    @Column
-    private int bet;
+//    @Column
+//    private int bet;
 
     @Column
     private int gain;
@@ -30,23 +30,23 @@ public class Result implements Comparable<Result>{
 
     public Result() {}
 
-    public Result(User user, Game game, int bet, int gain) {
+    public Result(User user, Game game, int gain) {
         this.user = user;
         this.game = game;
-        this.bet = bet;
+//        this.bet = bet;
         this.gain = gain;
     }
 
 
     public void setUser(User user) { this.user = user; }
     public void setGame(Game game) { this.game = game; }
-    public void setBet(int bet) { this.bet = bet; }
+//    public void setBet(int bet) { this.bet = bet; }
     public void setGain(int gain) { this.gain = gain; }
 
     public int getId() { return id; }
     public User getUser() { return user; }
     public Game getGame() { return game; }
-    public int getBet() { return bet; }
+//    public int getBet() { return bet; }
     public int getGain() { return gain; }
 
     @Override
