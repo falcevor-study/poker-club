@@ -85,7 +85,7 @@ public class UserController {
     public void logout(HttpServletRequest request, HttpServletResponse response){
         HttpSession session = request.getSession(false);
         SecurityContextHolder.clearContext();
-        session= request.getSession(false);
+        session = request.getSession(false);
         if(session != null) {
             session.invalidate();
         }

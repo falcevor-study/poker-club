@@ -14,4 +14,7 @@ public class CardService {
     public Card get(int id) {
         return cardRepository.findOne(id);
     }
+
+    // метод нужен для тестов
+    public void save(Card card) { cardRepository.save(card); }
 }

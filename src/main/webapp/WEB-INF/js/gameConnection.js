@@ -1,5 +1,5 @@
 var stompClient = null;
-window.addEventListener("beforeunload", disconnect);
+// window.addEventListener("beforeunload", disconnect);
 
 function connect() {
     disable_buttons();

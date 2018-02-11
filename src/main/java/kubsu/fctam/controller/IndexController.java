@@ -1,5 +1,7 @@
 package kubsu.fctam.controller;
 
+import kubsu.fctam.cardComparator.CombinationRecognizer;
+import kubsu.fctam.cardComparator.HandRating;
 import kubsu.fctam.entity.*;
 import kubsu.fctam.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,9 @@ public class IndexController {
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
+
+    @Autowired
+    private HandRating handRating;
 
     @RequestMapping(value = "index")
     public String getIndex(Model model) {
@@ -88,6 +93,8 @@ public class IndexController {
     public HashMap<String, Object> disconnect(HashMap map) {
         int tableId = Integer.parseInt((String) map.get("table_id"));
         int userId = Integer.parseInt((String) map.get("user_id"));
+        // TODO тут ошибка с удалением стула. Там почему-то 2 запроса и оптимистичная-блокировка-эксепшн
+        System.out.println(chairService.getChair(tableId, userId).getId());
         Chair chair = chairService.getChair(tableId, userId);
         chairService.delete(chair);
 
@@ -164,16 +171,12 @@ public class IndexController {
             int[] randomCards = randomWithoutDuplicates(table.chairsCount()*2, null);
             int card_number = 0;
             for (Chair chair : table.getChairs()) {
-                if (card_number == 0) {
-                    chair.setBet(table.getMinBet() / 2);
-                }
                 chair.setStatus("player");
                 chair.setCard1(cardService.get(randomCards[card_number]));
                 chair.setCard2(cardService.get(randomCards[card_number+1]));
                 card_number += 2;
                 chairService.save(chair);
             }
-            outputMap.put("chairs", table.getChairs());
 
             CurrentState state = new CurrentState(null, 0, null, null, null, null, null);
             List<Chair> chairs = chairService.getAll(table.getId());
@@ -184,7 +187,7 @@ public class IndexController {
             newGame.setState(state);
             stateService.save(state);
             outputMap.put("currentGameState", state);
-
+            outputMap.put("chairs", table.getChairs());
             return outputMap;
         }
 
@@ -218,7 +221,7 @@ public class IndexController {
      */
     @MessageMapping("/game/action")
     @SendTo("/topic/startgame/in")
-    public HashMap<String, Object> getAction(HashMap action) {
+    public HashMap<String, Object> getAction(HashMap action) throws Exception {
         int table_id = Integer.parseInt(action.get("table_id").toString());
         int user_id = Integer.parseInt(action.get("user_id").toString());
 
@@ -241,12 +244,12 @@ public class IndexController {
                 break;
             case "bet":
                 currentChair.setBet(value);
-                currentChair.setUserPot(currentChair.getUserPot() - value);
                 break;
             case "call":
+                currentChair.setBet(currentChair.getBet() + value);
+                break;
             case "raise":
                 currentChair.setBet(currentChair.getBet() + value);
-                currentChair.setUserPot(currentChair.getUserPot() - value);
                 break;
             case "fold":
                 currentChair.setStatus("watcher");
@@ -258,8 +261,10 @@ public class IndexController {
 
         currentChair.setIsChecked(true);
         chairService.save(currentChair);
-        if (table.amountOfActivePlayers() < 2)
-            return finishGame(table);
+        if (table.amountOfActivePlayers() < 2) {
+            System.out.println("only one player here");
+            return null;
+        }
 
         boolean tradeEnd = true;
         int bet = chairs.get(0).getBet();
@@ -296,17 +301,23 @@ public class IndexController {
      * @param table - объект стола, на котором надо закончить игру
      * @return - структуру данных для клиента (список стульев и текущее состояние игры)
      */
-    public HashMap<String, Object> finishGame(Table table) {
+    public HashMap<String, Object> finishGame(Table table) throws Exception {
         Game currentGame = tableService.getCurrentGame(table);
         CurrentState currentState = currentGame.getState();
         currentGame.setEndDtm(new Date());
         gameService.save(currentGame);
-        Chair winner = table.getChairs().get(0); // TODO: Как-то находить победителя.
-        winner.setUserPot(winner.getUserPot() + currentState.getPot());
-        chairService.save(winner);
+        // TODO: Как-то находить победителя.
+        handRating.setHandRating(table.getChairs(), currentState);
+        List<Chair> winners = handRating.getWinner();
+        for (Chair winner : winners) {
+            winner.setUserPot(winner.getUserPot() + (currentState.getPot()/winners.size()));
+            chairService.save(winner);
+        }
         for (Chair chair : table.getChairs()) {
             Result result = new Result(chair.getUser(), currentGame, chair.getUserPot()-chair.getStartUserPot());
             resultService.save(result);
+            chair.getUser().setMoney(chair.getUser().getMoney() + result.getGain());
+            userService.save(chair.getUser());
         }
 
         HashMap<String, Object> tableIdMap = new HashMap<>();

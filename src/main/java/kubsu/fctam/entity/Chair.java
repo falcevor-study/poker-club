@@ -26,19 +26,19 @@ public class Chair implements Comparable<Chair> {
     private Table table;
 
     @Column
-    private int number;
+    private Integer number;
 
     @Column(length = 50)
     private String status;
 
     @Column
-    private int bet;
+    private Integer bet;
 
     @Column
-    private int userPot;
+    private Integer userPot;
 
     @Column
-    private int startUserPot;
+    private Integer startUserPot;
 
     @ManyToOne
     @JoinColumn(name = "card1Id")
@@ -76,7 +76,10 @@ public class Chair implements Comparable<Chair> {
     public void setTable(Table table) { this.table = table; }
     public void setNumber(int number) { this.number = number; }
     public void setStatus(String status) { this.status = status; }
-    public void setBet(int bet) { this.bet = bet; }
+    public void setBet(int bet) {
+        this.bet = bet;
+        this.userPot -= this.bet;
+    }
     public void setUserPot(int userPot) { this.userPot = userPot; }
     public void setStartUserPot(int startUserPot) { this.startUserPot = startUserPot; }
     public void setCard1(Card card1) { this.card1 = card1; }
