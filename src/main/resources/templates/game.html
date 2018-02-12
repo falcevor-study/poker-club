@@ -11,7 +11,7 @@
     <script src="../webjars/stomp-websocket/2.3.3/stomp.min.js"></script>
     <link th:href="@{/css/table_style.css}" type="text/css" rel="stylesheet"/>
     <link th:href="@{/css/deck_style.css}" type="text/css" rel="stylesheet"/>
-    <script th:inline="javascript" th:src="@{/js/gameConnection.js}"></script>
+    <script th:src="@{/js/gameConnection.js}"></script>
     <title>Table</title>
 </head>
 <!--при загрузке сразу соединяется с сервером и создаем chair для юзера-->
@@ -107,7 +107,7 @@
         </div>
         <!--выходом из игры обязательно долдна быть ссылка, а не редирект,
             иначе будет редирект всех юзеров разом, а как без ссылки сделать, я хз -->
-        <a th:onclick="'disconnect();'" th:href="@{/tables}">Выйти из игры</a>
+        <!--<a th:onclick="'disconnect();'" th:href="@{/tables}">Выйти из игры</a>-->
 
         <div class="action">
             <button id="check" onclick="sendAction('check');" disabled="disabled">Check</button>
