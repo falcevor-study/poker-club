@@ -49,6 +49,7 @@ public class Combination implements Comparable<Combination>{
         String retStr = "cards: ";
         for (Card card : this.cards)
             retStr += card.getId() + " ";
-        return retStr + "highCard: " + this.highCard.getId() + " highCardInCombination: " + this.highCardInCombination.getId() + " value: " + this.value;
+        return retStr + "highCard: " + this.highCard.getId() + " highCardInCombination: " +
+                this.highCardInCombination.getId() + " value: " + this.value;
     }
 }

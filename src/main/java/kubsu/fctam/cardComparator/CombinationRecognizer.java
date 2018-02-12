@@ -46,45 +46,35 @@ public class CombinationRecognizer {
             throw new Exception("incorrect size of cards treemap");
     }
 
-//    public CombinationRecognizer(Chair chair, CurrentState state) {
-//        this.cards = new TreeMap<>();
-//        this.cards.put(chair.getCard1(), false);
-//        this.cards.put(chair.getCard2(), false);
-//        this.cards.put(state.getTableCard1(), false);
-//        this.cards.put(state.getTableCard2(), false);
-//        this.cards.put(state.getTableCard3(), false);
-//        this.cards.put(state.getTableCard4(), false);
-//        this.cards.put(state.getTableCard5(), false);
-//    }
 
     public Combination getCombination(){
         Combination combination = findRoyalFlush();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findStraightFlush();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findQuads();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findFullHouse();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findFlush();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findStraight();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findSet();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findTwoPairs();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         combination = findOnePair();
-        if (combination != null)
-            return combination;
+        if (combination != null) return combination;
+
         return findHighCard();
     }
 
@@ -98,7 +88,7 @@ public class CombinationRecognizer {
             if (this.cards.keySet().containsAll(combination)) {
                 for (Card card : combination)
                     this.cards.put(card, true);
-                return new Combination(combination, service.get(54), service.get(54), 10);
+                return new Combination(combination, combination.get(4), combination.get(4), 10);
             }
         return null;
     }
@@ -235,9 +225,15 @@ public class CombinationRecognizer {
         List<Card> cards = new ArrayList<>(this.cards.keySet());
         Combination maxPair = null;
         for (int i = 0; i<cards.size()-1; ++i) {
-            if (cards.get(i).getRate() == cards.get(i + 1).getRate() && !this.cards.get(cards.get(i)) && !this.cards.get(cards.get(i + 1))) {
+            if (cards.get(i).getRate() == cards.get(i + 1).getRate() &&
+                !this.cards.get(cards.get(i)) &&
+                !this.cards.get(cards.get(i + 1))) {
+
                 if (maxPair == null || maxPair.getHighCardInCombination().getRate() < cards.get(i).getRate())
-                    maxPair = new Combination(Arrays.asList(cards.get(i), cards.get(i + 1)), cards.get(i), this.cards.lastKey(), 2);
+                    maxPair = new Combination(Arrays.asList(cards.get(i), cards.get(i + 1)),
+                                              cards.get(i),
+                                              this.cards.lastKey(),
+                                              2);
             }
         }
         if (maxPair != null){
